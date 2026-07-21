@@ -17,10 +17,17 @@ _PRETTY = {
     "by-nc-sa": "CC BY-NC-SA",
     "by-nc-nd": "CC BY-NC-ND",
     "sampling+": "CC Sampling+",
+    "pixabay": "Pixabay License",
+    "pexels": "Pexels License",
+    "unsplash": "Unsplash License",
 }
 
 # 퍼블릭 도메인류 (저작자 표기 불필요)
 _PUBLIC_DOMAIN = {"cc0", "pdm", "publicdomain"}
+
+# 저작자 표기가 필요 없는 라이선스 (퍼블릭 도메인 + 자체 라이선스 스톡)
+#  - Unsplash 는 라이선스상 표기 의무는 없으나 API 가이드라인상 권장됨(README 참고)
+_NO_ATTRIBUTION = _PUBLIC_DOMAIN | {"pixabay", "pexels", "unsplash"}
 
 
 def normalize(code: str | None) -> str:
@@ -45,8 +52,8 @@ def is_modification_ok(code: str | None) -> bool:
 
 
 def is_attribution_required(code: str | None) -> bool:
-    """퍼블릭 도메인류가 아니면 저작자 표기가 필요."""
-    return normalize(code) not in _PUBLIC_DOMAIN
+    """표기 불필요 라이선스(퍼블릭도메인/Pixabay/Pexels 등)가 아니면 표기 필요."""
+    return normalize(code) not in _NO_ATTRIBUTION
 
 
 def pretty_name(code: str | None, version: str | None = None) -> str:
