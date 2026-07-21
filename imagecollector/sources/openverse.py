@@ -64,7 +64,8 @@ class OpenverseSource(Source):
         coll = self.config.collection
         license_type = coll.get("license_type", "commercial")
         mature = "false" if coll.get("safe_search", True) else "true"
-        page_size = min(max(limit, 20), 100)
+        # 익명 사용자는 page_size 최대 20 (초과 시 401). 토큰이 있으면 더 크게.
+        page_size = 100 if getattr(self, "_token", None) else 20
 
         yielded = 0
         page = 1

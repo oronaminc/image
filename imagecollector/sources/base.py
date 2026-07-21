@@ -39,7 +39,8 @@ class Source(ABC):
         delay = float(self.config.collection.get("request_delay", 0.6))
         for attempt in range(max_retries):
             resp = self.session.get(url, params=params, headers=headers, timeout=timeout)
-            if resp.status_code == 429 or resp.status_code >= 500:
+            # 429(rate limit), 401/403(스로틀링 시 발생), 5xx 는 백오프 후 재시도
+            if resp.status_code in (401, 403, 429) or resp.status_code >= 500:
                 wait = resp.headers.get("Retry-After")
                 sleep_for = float(wait) if wait and wait.isdigit() else (delay * (2 ** attempt) + 1)
                 time.sleep(min(sleep_for, 30))

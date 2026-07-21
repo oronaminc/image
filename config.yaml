@@ -15,10 +15,11 @@ collection:
   default_source: openverse
   license_type: commercial      # commercial | commercial,modification
   safe_search: true
-  per_category_limit: 15        # 검색어당 수집 개수
+  per_category_limit: 12        # 검색어당 수집 개수
   min_width: 600
   min_height: 400
-  request_delay: 0.4
+  # Openverse 익명 한도(분당 20회)를 지키려면 4초 이상 권장. (API 키 등록 시 낮춰도 됨)
+  request_delay: 4.0
   near_dup_threshold: 0
   user_agent: "ImageCollector/1.0 (+https://github.com/oronaminc/image)"
 
