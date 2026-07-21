@@ -1,0 +1,28 @@
+# --- Image Collector: local data (do not commit) ---
+images/
+thumbnails/
+library.db
+library.db-journal
+library.db-wal
+library.db-shm
+ATTRIBUTIONS.md
+exports/
+
+# --- Secrets / local config ---
+.env
+config.local.yaml
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,52 @@
+# =====================================================================
+#  Image Collector  ·  설정 파일
+#  - 카테고리별로 어떤 검색어(query)로 이미지를 모을지 여기서 정합니다.
+#  - 상업적 사용에 안전한 라이선스만 수집하도록 기본값이 잡혀 있습니다.
+# =====================================================================
+
+storage:
+  images_dir: images          # 원본 이미지 저장 폴더
+  thumbnails_dir: thumbnails   # 썸네일 저장 폴더
+  database: library.db         # 메타데이터 SQLite DB
+  thumbnail_size: 400          # 썸네일 긴 변 최대 픽셀
+
+collection:
+  default_source: openverse    # openverse | wikimedia | pexels | pixabay | unsplash
+  # license_type:
+  #   commercial              -> 상업적 사용 허용 라이선스만 (권장)
+  #   commercial,modification -> 상업적 사용 + 변형(수정) 허용까지
+  license_type: commercial
+  safe_search: true            # 성인/자극적 콘텐츠 제외
+  per_category_limit: 40       # 카테고리(검색어)당 받을 이미지 수
+  min_width: 600               # 이 너비 미만은 건너뜀 (0 = 제한 없음)
+  min_height: 400              # 이 높이 미만은 건너뜀 (0 = 제한 없음)
+  request_delay: 0.6           # API 호출 사이 대기(초) — 예의상 rate limit 존중
+  near_dup_threshold: 0        # 수집 중 유사중복 스킵 임계값(해밍거리). 0 = 비활성
+  user_agent: "ImageCollector/1.0 (+https://github.com/oronaminc/image)"
+
+# 카테고리 -> 검색어 목록
+# 원하는 대로 자유롭게 추가/수정하세요.
+categories:
+  nature:
+    - forest landscape
+    - mountain sunrise
+    - ocean waves
+    - autumn leaves
+  business:
+    - modern office workspace
+    - team meeting
+    - handshake business
+  food:
+    - healthy breakfast
+    - coffee cup
+    - fresh vegetables
+  technology:
+    - laptop desk
+    - server data center
+    - circuit board
+  people:
+    - person working laptop
+    - smiling portrait
+  abstract:
+    - abstract background
+    - geometric pattern

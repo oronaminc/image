@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}통계 · Image Collector{% endblock %}
+{% block content %}
+<h1>📊 라이브러리 통계</h1>
+
+<div class="stat-cards">
+  <div class="stat-card"><span class="num">{{ stats.total }}</span><span>전체 이미지</span></div>
+  <div class="stat-card"><span class="num">{{ stats.commercial }}</span><span>상업적 사용 가능</span></div>
+  <div class="stat-card"><span class="num">{{ stats.favorites }}</span><span>즐겨찾기</span></div>
+  <div class="stat-card"><span class="num">{{ stats.total_size|human_size }}</span><span>총 용량</span></div>
+</div>
+
+<div class="stat-columns">
+  <section>
+    <h2>카테고리별</h2>
+    {% for name, n in stats.by_category %}
+    <div class="bar-row"><span>{{ name }}</span><span class="n">{{ n }}</span></div>
+    {% endfor %}
+  </section>
+  <section>
+    <h2>소스별</h2>
+    {% for name, n in stats.by_source %}
+    <div class="bar-row"><span>{{ name }}</span><span class="n">{{ n }}</span></div>
+    {% endfor %}
+  </section>
+  <section>
+    <h2>라이선스별</h2>
+    {% for name, n in stats.by_license %}
+    <div class="bar-row"><span>{{ name or 'unknown' }}</span><span class="n">{{ n }}</span></div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

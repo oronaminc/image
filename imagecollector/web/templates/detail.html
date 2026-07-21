@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ img.title or img.filename }} · Image Collector{% endblock %}
+{% block content %}
+
+<a class="back" href="javascript:history.back()">← 뒤로</a>
+
+<div class="detail" data-id="{{ img.id }}">
+  <div class="detail-image">
+    <img src="{{ img.image_url }}" alt="{{ img.title }}">
+  </div>
+
+  <aside class="detail-info">
+    <h1>{{ img.title or '(제목 없음)' }}</h1>
+
+    <div class="actions">
+      <button id="fav-btn" class="btn {% if img.favorite %}active{% endif %}"
+              data-fav="{{ img.favorite }}">
+        {% if img.favorite %}⭐ 즐겨찾기됨{% else %}☆ 즐겨찾기{% endif %}
+      </button>
+      <a class="btn" href="{{ img.image_url }}" download>⬇ 원본 다운로드</a>
+      <button id="del-btn" class="btn danger">🗑 삭제</button>
+    </div>
+
+    <div class="license-box {% if img.commercial_use %}ok{% else %}warn{% endif %}">
+      <strong>{{ img.license|upper or 'UNKNOWN' }}
+        {{ img.license_version or '' }}</strong>
+      <ul>
+        <li>{% if img.commercial_use %}✅ 상업적 사용 가능{% else %}⛔ 상업적 사용 불가{% endif %}</li>
+        <li>{% if img.modification %}✅ 수정/변형 가능{% else %}⛔ 수정/변형 불가{% endif %}</li>
+        <li>{% if img.attribution_required %}⚠️ 저작자 표기 필요{% else %}✅ 표기 불필요{% endif %}</li>
+      </ul>
+      {% if img.license_url %}<a href="{{ img.license_url }}" target="_blank" rel="noopener">라이선스 전문 →</a>{% endif %}
+    </div>
+
+    {% if img.attribution %}
+    <div class="attr">
+      <label>저작자 표기 (복사해서 사용)</label>
+      <textarea id="attr-text" readonly>{{ img.attribution }}</textarea>
+      <button class="btn small" onclick="copyAttr()">📋 복사</button>
+    </div>
+    {% endif %}
+
+    <table class="props">
+      <tr><th>파일명</th><td>{{ img.filename }}</td></tr>
+      <tr><th>카테고리</th><td>{{ img.category }}</td></tr>
+      <tr><th>검색어</th><td>{{ img.query }}</td></tr>
+      <tr><th>소스</th><td>{{ img.source }} {% if img.provider %}· {{ img.provider }}{% endif %}</td></tr>
+      <tr><th>크기</th><td>{{ img.width }} × {{ img.height }} px</td></tr>
+      <tr><th>용량</th><td>{{ img.filesize|human_size }}</td></tr>
+      <tr><th>포맷</th><td>{{ img.format }}</td></tr>
+      {% if img.creator %}<tr><th>저작자</th><td>
+        {% if img.creator_url %}<a href="{{ img.creator_url }}" target="_blank" rel="noopener">{{ img.creator }}</a>{% else %}{{ img.creator }}{% endif %}
+      </td></tr>{% endif %}
+      {% if img.tags %}<tr><th>태그</th><td>{{ img.tags }}</td></tr>{% endif %}
+      {% if img.foreign_landing_url %}<tr><th>원본 페이지</th><td>
+        <a href="{{ img.foreign_landing_url }}" target="_blank" rel="noopener">열기 →</a>
+      </td></tr>{% endif %}
+      <tr><th>수집 시각</th><td>{{ img.collected_at }}</td></tr>
+      <tr><th>SHA-256</th><td class="mono">{{ img.sha256[:24] }}…</td></tr>
+    </table>
+  </aside>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>window.__IMG_ID__ = {{ img.id }};</script>
+{% endblock %}

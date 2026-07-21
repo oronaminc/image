@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}저작자 표기 · Image Collector{% endblock %}
+{% block content %}
+<h1>📝 저작자 표기 (Attribution)</h1>
+<p class="count">
+  아래는 라이선스상 <strong>저작자 표기가 필요한</strong> 이미지 {{ rows|length }}개입니다.
+  퍼블릭 도메인(CC0/PDM)은 표기 의무가 없어 제외됩니다.
+  <a class="btn small" href="/attributions.md" download="ATTRIBUTIONS.md">⬇ Markdown 다운로드</a>
+</p>
+
+{% if rows %}
+<table class="attr-table">
+  <thead><tr><th></th><th>파일 / 저작자 표기</th><th>라이선스</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td><a href="/image/{{ r.id }}"><img class="mini" src="{{ r.thumb_url }}" alt=""></a></td>
+      <td>
+        <code>{{ r.filename }}</code><br>
+        <span class="attr-text">{{ r.attribution or r.title }}</span>
+      </td>
+      <td>{{ r.license|upper }} {{ r.license_version or '' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="hint">표기가 필요한 이미지가 없습니다. (모두 퍼블릭 도메인이거나 아직 수집 전)</p>
+{% endif %}
+{% endblock %}

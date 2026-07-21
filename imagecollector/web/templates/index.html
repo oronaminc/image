@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}갤러리 · Image Collector{% endblock %}
+{% block content %}
+
+<form class="filters" method="get" action="/">
+  <input type="search" name="q" value="{{ f.q }}" placeholder="제목·태그·저작자 검색…">
+  <select name="category" onchange="this.form.submit()">
+    <option value="">모든 카테고리</option>
+    {% for c in categories %}
+      <option value="{{ c }}" {% if c == f.category %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select name="source" onchange="this.form.submit()">
+    <option value="">모든 소스</option>
+    {% for s in sources %}
+      <option value="{{ s }}" {% if s == f.source %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <select name="license" onchange="this.form.submit()">
+    <option value="">모든 라이선스</option>
+    {% for l in licenses %}
+      <option value="{{ l }}" {% if l == f.license %}selected{% endif %}>{{ l or 'unknown' }}</option>
+    {% endfor %}
+  </select>
+  <select name="order" onchange="this.form.submit()">
+    <option value="recent"  {% if f.order=='recent' %}selected{% endif %}>최신순</option>
+    <option value="oldest"  {% if f.order=='oldest' %}selected{% endif %}>오래된순</option>
+    <option value="title"   {% if f.order=='title' %}selected{% endif %}>제목순</option>
+    <option value="rating"  {% if f.order=='rating' %}selected{% endif %}>평점순</option>
+    <option value="size"    {% if f.order=='size' %}selected{% endif %}>용량순</option>
+  </select>
+  <label class="chk">
+    <input type="checkbox" name="favorite" value="1" {% if f.favorite %}checked{% endif %}
+           onchange="this.form.submit()"> ⭐ 즐겨찾기
+  </label>
+  <button type="submit">검색</button>
+</form>
+
+<p class="count">{{ total }}개 이미지
+  {% if f.category or f.source or f.license or f.q or f.favorite %}(필터 적용됨){% endif %}
+</p>
+
+{% if items %}
+<div class="grid">
+  {% for it in items %}
+  <a class="card" href="/image/{{ it.id }}" id="card-{{ it.id }}">
+    <div class="thumb">
+      <img loading="lazy" src="{{ it.thumb_url }}" alt="{{ it.title }}">
+      {% if it.commercial_use %}<span class="badge ok">상업OK</span>{% endif %}
+      {% if it.favorite %}<span class="star">⭐</span>{% endif %}
+    </div>
+    <div class="meta">
+      <span class="lic">{{ it.license or 'unknown' }}</span>
+      <span class="dim">{{ it.width }}×{{ it.height }}</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+{% if pages > 1 %}
+<nav class="pager">
+  {% set base = "/?category=" ~ f.category ~ "&source=" ~ f.source ~ "&license=" ~ f.license ~ "&q=" ~ f.q ~ "&favorite=" ~ f.favorite ~ "&order=" ~ f.order %}
+  {% if page > 1 %}<a href="{{ base }}&page={{ page-1 }}">← 이전</a>{% endif %}
+  <span>{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="{{ base }}&page={{ page+1 }}">다음 →</a>{% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty">
+  <p>아직 수집된 이미지가 없습니다.</p>
+  <p class="hint">터미널에서 <code>python -m imagecollector collect</code> 를 실행해 보세요.</p>
+</div>
+{% endif %}
+
+{% endblock %}
