@@ -12,7 +12,7 @@ storage:
   thumbnail_size: 400
 
 collection:
-  default_source: openverse
+  default_source: pixabay      # 블로그용 기본(표기 불필요). 키 없으면 openverse 로 변경
   license_type: commercial      # commercial | commercial,modification
   safe_search: true
   per_category_limit: 12        # 검색어당 수집 개수

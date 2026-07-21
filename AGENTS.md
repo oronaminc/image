@@ -13,6 +13,8 @@ source .venv/bin/activate
 python -m imagecollector search "<키워드>" --limit 3 --json
 ```
 
+- **기본 소스는 Pixabay** 입니다 → 반환 이미지는 대부분 **저작자 표기 불필요**(`attribution_required: false`).
+  블로그에 크레딧 없이 바로 넣을 수 있습니다.
 - `<키워드>`는 **영어**가 결과가 훨씬 많습니다. (예: 정치→`government building`, 지원금→`financial support`)
 - `--json` 을 붙이면 아래 형식의 JSON 배열이 stdout 으로 나옵니다. 이걸 파싱해서 쓰세요.
 - 항상 **최대 `--limit` 개의 사용 가능한 이미지**를 돌려줍니다.
