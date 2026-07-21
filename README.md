@@ -43,11 +43,19 @@ python -m imagecollector serve
 
 키 없이 **Openverse**로 바로 시작됩니다.
 
+> 🤖 **블로그 포스팅 AI(다른 Claude)가 이 도구를 쓴다면** → [`AGENTS.md`](AGENTS.md) 를 참고하세요.
+> 핵심은 `python -m imagecollector search "<키워드>" --limit 3 --json` 한 줄입니다.
+
 ---
 
 ## 🧰 명령어
 
 ```bash
+# 키워드로 상업적 사용 가능 이미지 검색·다운로드 (블로그용 핵심 기능)
+python -m imagecollector search "government building" --limit 5
+python -m imagecollector search "money coins" --limit 5 --no-attribution   # CC0만(표기 불필요)
+python -m imagecollector search "coffee" --limit 3 --json                  # JSON 출력(자동화용)
+
 # 전체 수집 (config.yaml 기준)
 python -m imagecollector collect
 
