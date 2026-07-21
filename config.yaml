@@ -1,52 +1,144 @@
 # =====================================================================
-#  Image Collector  ·  설정 파일
-#  - 카테고리별로 어떤 검색어(query)로 이미지를 모을지 여기서 정합니다.
-#  - 상업적 사용에 안전한 라이선스만 수집하도록 기본값이 잡혀 있습니다.
+#  Image Collector  ·  설정 파일 (블로그 포스팅용)
+#  - 카테고리별 검색어로 상업적 사용 가능한 무료 이미지를 모읍니다.
+#  - 무료 이미지 소스는 영어 색인이 훨씬 풍부하므로 검색어는 영어로 둡니다.
+#    (카테고리 이름 옆 주석이 한국어 블로그 주제입니다.)
 # =====================================================================
 
 storage:
-  images_dir: images          # 원본 이미지 저장 폴더
-  thumbnails_dir: thumbnails   # 썸네일 저장 폴더
-  database: library.db         # 메타데이터 SQLite DB
-  thumbnail_size: 400          # 썸네일 긴 변 최대 픽셀
+  images_dir: images
+  thumbnails_dir: thumbnails
+  database: library.db
+  thumbnail_size: 400
 
 collection:
-  default_source: openverse    # openverse | wikimedia | pexels | pixabay | unsplash
-  # license_type:
-  #   commercial              -> 상업적 사용 허용 라이선스만 (권장)
-  #   commercial,modification -> 상업적 사용 + 변형(수정) 허용까지
-  license_type: commercial
-  safe_search: true            # 성인/자극적 콘텐츠 제외
-  per_category_limit: 40       # 카테고리(검색어)당 받을 이미지 수
-  min_width: 600               # 이 너비 미만은 건너뜀 (0 = 제한 없음)
-  min_height: 400              # 이 높이 미만은 건너뜀 (0 = 제한 없음)
-  request_delay: 0.6           # API 호출 사이 대기(초) — 예의상 rate limit 존중
-  near_dup_threshold: 0        # 수집 중 유사중복 스킵 임계값(해밍거리). 0 = 비활성
+  default_source: openverse
+  license_type: commercial      # commercial | commercial,modification
+  safe_search: true
+  per_category_limit: 15        # 검색어당 수집 개수
+  min_width: 600
+  min_height: 400
+  request_delay: 0.4
+  near_dup_threshold: 0
   user_agent: "ImageCollector/1.0 (+https://github.com/oronaminc/image)"
 
-# 카테고리 -> 검색어 목록
-# 원하는 대로 자유롭게 추가/수정하세요.
 categories:
-  nature:
-    - forest landscape
-    - mountain sunrise
-    - ocean waves
-    - autumn leaves
-  business:
-    - modern office workspace
+  politics:              # 정치
+    - government building
+    - election voting
+    - parliament congress
+    - protest rally
+    - politician speech podium
+    - national flag
+  entertainment:         # 연예
+    - concert stage
+    - movie theater cinema
+    - microphone singer
+    - red carpet event
+    - music festival crowd
+    - spotlight performance
+  subsidy:               # 지원금
+    - cash money hand
+    - financial aid support
+    - government welfare
+    - bank counter
+    - receiving money
+    - benefit document
+  money:                 # 돈
+    - money banknotes
+    - coins stack
+    - piggy bank savings
+    - wallet cash
+    - credit card payment
+    - gold bars
+  economy:               # 경제
+    - stock market chart
+    - financial graph
+    - business trading
+    - city financial district
+    - economic growth arrow
+    - handshake business deal
+  daily-life:            # 일상
+    - morning coffee
+    - city commute
+    - home living room
+    - cooking dinner
+    - walking in park
+    - grocery shopping
+  emotion:               # 감정
+    - happy smile
+    - sad lonely
+    - angry frustrated
+    - calm peaceful meditation
+    - stressed worried
+    - excited celebration joy
+  health:                # 건강
+    - running exercise
+    - healthy food salad
+    - hospital medical
+    - yoga meditation
+    - sleeping rest
+    - doctor patient
+  work:                  # 직장/업무
+    - office workspace
+    - laptop desk work
     - team meeting
-    - handshake business
-  food:
-    - healthy breakfast
-    - coffee cup
-    - fresh vegetables
-  technology:
-    - laptop desk
-    - server data center
-    - circuit board
-  people:
-    - person working laptop
-    - smiling portrait
-  abstract:
-    - abstract background
-    - geometric pattern
+    - business handshake
+    - coworking space
+    - presentation whiteboard
+  technology:            # 기술/IT
+    - smartphone in hand
+    - computer code screen
+    - artificial intelligence
+    - data server room
+    - robot technology
+    - network connection
+  travel:                # 여행
+    - airplane travel
+    - beach vacation
+    - mountain hiking
+    - city skyline
+    - road trip car
+    - hotel room
+  food:                  # 음식
+    - korean food
+    - coffee cafe
+    - dessert cake
+    - restaurant meal
+    - fresh fruit
+    - cooking ingredients
+  nature:                # 자연
+    - forest landscape
+    - ocean sunset
+    - mountain scenery
+    - flower garden
+    - sky clouds
+    - waterfall
+  education:             # 교육
+    - student studying
+    - books library
+    - classroom
+    - graduation
+    - online learning
+    - writing notes
+  family:                # 가족
+    - family together
+    - parent and child
+    - elderly couple
+    - baby infant
+    - home family dinner
+    - children playing
+  sports:                # 스포츠
+    - soccer football
+    - marathon running
+    - gym fitness
+    - basketball
+    - swimming pool
+    - cycling bike
+  season-weather:        # 날씨/계절
+    - rain umbrella
+    - snow winter
+    - autumn leaves
+    - spring cherry blossom
+    - summer beach sun
+    - clear blue sky

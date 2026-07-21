@@ -78,7 +78,7 @@ class Collector:
             for result in source.search(query, limit * 2):  # 필터 감안해 여유있게 요청
                 if got >= limit:
                     break
-                status = self._process(result, category, query)
+                status, _image_id = self._process(result, category, query)
                 if status == "ok":
                     got += 1
                     console.print(f"  [green]✓[/green] {got}/{limit}  {result.title[:60] or result.source_id}")
@@ -88,19 +88,25 @@ class Collector:
         if got == 0:
             console.print("  [yellow](수집된 이미지 없음)[/yellow]")
 
-    def _process(self, r: ImageResult, category: str, query: str) -> str:
+    def _process(self, r: ImageResult, category: str, query: str,
+                 attribution_free: bool = False) -> tuple[str, int | None]:
         coll = self.config.collection
 
         # 1) 이미 있는 항목(같은 소스+id) 건너뜀
         if db.exists_source_id(self.conn, r.source, r.source_id):
             self.stats["skipped_dup"] += 1
-            return "dup"
+            return "dup", None
 
         # 2) 상업적 사용 안전장치
         if coll.get("license_type", "commercial").startswith("commercial"):
             if not licenses.is_commercial_ok(r.license) and r.source in ("openverse", "wikimedia"):
                 self.stats["skipped_filter"] += 1
-                return "filter"
+                return "filter", None
+
+        # 2-b) 저작자 표기 불필요 이미지만 원할 때 (다운로드 전 필터 → 낭비 없음)
+        if attribution_free and licenses.is_attribution_required(r.license):
+            self.stats["skipped_filter"] += 1
+            return "filter", None
 
         # 3) 확장자 판별 (svg 등 미지원 제외)
         ext = images.guess_ext(r.url, None, r.filetype)
@@ -113,7 +119,7 @@ class Collector:
         min_h = int(coll.get("min_height", 0) or 0)
         if r.width and r.height and (r.width < min_w or r.height < min_h):
             self.stats["skipped_filter"] += 1
-            return "filter"
+            return "filter", None
 
         # 5) 다운로드 (임시 이름 → 검증 후 확정)
         filename = images.make_filename(category, r.title, r.source, r.source_id, ext)
@@ -123,7 +129,7 @@ class Collector:
             sha, size, content_type = images.download(self.session, r.url, dest)
         except Exception:
             self.stats["errors"] += 1
-            return "error"
+            return "error", None
 
         # content-type 으로 확장자 보정
         real_ext = images.guess_ext(r.url, content_type, r.filetype)
@@ -141,19 +147,19 @@ class Collector:
         if db.exists_sha256(self.conn, sha):
             dest.unlink(missing_ok=True)
             self.stats["skipped_dup"] += 1
-            return "dup"
+            return "dup", None
 
         # 7) 실제 이미지 검증 + 크기/포맷
         probe = images.probe_image(dest)
         if probe is None:
             dest.unlink(missing_ok=True)
             self.stats["errors"] += 1
-            return "error"
+            return "error", None
         width, height, fmt = probe
         if (min_w and width < min_w) or (min_h and height < min_h):
             dest.unlink(missing_ok=True)
             self.stats["skipped_filter"] += 1
-            return "filter"
+            return "filter", None
 
         # 8) 지각적 해시 + (옵션) 유사중복 스킵
         phash = dedup.dhash(dest)
@@ -163,7 +169,7 @@ class Collector:
                 if dedup.hamming(phash, existing) <= threshold:
                     dest.unlink(missing_ok=True)
                     self.stats["skipped_dup"] += 1
-                    return "dup"
+                    return "dup", None
 
         # 9) 썸네일 (항상 .jpg)
         thumb_rel = Path(category) / (Path(filename).with_suffix(".jpg").name)
@@ -203,14 +209,14 @@ class Collector:
             "collected_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         try:
-            db.insert_image(self.conn, record)
+            image_id = db.insert_image(self.conn, record)
         except sqlite3.IntegrityError:
             dest.unlink(missing_ok=True)
             self.stats["skipped_dup"] += 1
-            return "dup"
+            return "dup", None
 
         self.stats["downloaded"] += 1
-        return "ok"
+        return "ok", image_id
 
     def _print_summary(self) -> None:
         s = self.stats
@@ -218,3 +224,93 @@ class Collector:
             f"\n[bold green]완료[/bold green] · 신규 {s['downloaded']}장 · "
             f"중복 스킵 {s['skipped_dup']} · 필터 제외 {s['skipped_filter']} · 오류 {s['errors']}"
         )
+
+    # --- 키워드 검색 & 다운로드 (다른 Claude/자동화용) ---
+    def search(self, keyword: str, limit: int = 5, category: str | None = None,
+               source_name: str | None = None,
+               attribution_free: bool = False) -> list[dict]:
+        """키워드로 상업적 사용 가능 이미지를 limit 장 받아 저장하고, 각 이미지의
+        메타데이터(dict) 목록을 반환. 이미 있는 이미지는 건너뛰고 새로 채운다."""
+        coll = self.config.collection
+        source_name = source_name or coll.get("default_source", "openverse")
+        source = get_source(source_name, self.config)
+        ok, note = source.available()
+        if not ok:
+            raise RuntimeError(f"소스 '{source_name}' 사용 불가: {note}")
+
+        # 저작자 표기 불필요 이미지만 원하면 Openverse 라이선스도 CC0/PDM 로 좁힘
+        if attribution_free:
+            setattr(source, "license_override", "cc0,pdm")
+
+        category = category or images.slugify(keyword, 40) or "search"
+        collected: list[dict] = []
+        seen_ids: set[int] = set()
+
+        # 1) 새로 다운로드 시도 (넉넉히 요청 — 중복/필터로 빠지는 경우 대비)
+        try:
+            for result in source.search(keyword, max(limit * 4, limit + 8)):
+                if len(collected) >= limit:
+                    break
+                status, image_id = self._process(
+                    result, category, keyword, attribution_free=attribution_free
+                )
+                if status == "ok" and image_id:
+                    rec = self.record_json(image_id)
+                    if rec:
+                        collected.append(rec)
+                        seen_ids.add(image_id)
+        except Exception as exc:
+            console.print(f"[yellow]다운로드 중 경고:[/yellow] {exc}")
+
+        # 2) 부족하면 라이브러리의 기존 이미지로 채움 (항상 사용 가능하도록)
+        if len(collected) < limit:
+            candidates = list(db.query_images(
+                self.conn, category=category, commercial_only=True, limit=limit * 4
+            ))
+            # 키워드 텍스트 매칭도 보강
+            candidates += list(db.query_images(
+                self.conn, search=keyword, commercial_only=True, limit=limit * 4
+            ))
+            for row in candidates:
+                if len(collected) >= limit:
+                    break
+                if row["id"] in seen_ids:
+                    continue
+                if attribution_free and row["attribution_required"]:
+                    continue
+                rec = self.record_json(row["id"])
+                if rec:
+                    collected.append(rec)
+                    seen_ids.add(row["id"])
+
+        return collected[:limit]
+
+    def record_json(self, image_id: int) -> dict | None:
+        """이미지 한 건을 기계가 읽기 좋은 dict 로 변환(절대경로 포함)."""
+        row = db.get_image(self.conn, image_id)
+        if not row:
+            return None
+        img_path = (self.config.images_dir / row["filepath"]).resolve()
+        thumb = None
+        if row["thumbnail_path"]:
+            thumb = str((self.config.thumbnails_dir / row["thumbnail_path"]).resolve())
+        return {
+            "id": row["id"],
+            "title": row["title"],
+            "category": row["category"],
+            "keyword": row["query"],
+            "path": str(img_path),
+            "thumbnail": thumb,
+            "width": row["width"],
+            "height": row["height"],
+            "format": row["format"],
+            "source": row["source"],
+            "source_url": row["foreign_landing_url"],
+            "license": row["license"],
+            "license_url": row["license_url"],
+            "commercial_use": bool(row["commercial_use"]),
+            "modification_allowed": bool(row["modification"]),
+            "attribution_required": bool(row["attribution_required"]),
+            "attribution": row["attribution"],
+            "creator": row["creator"],
+        }

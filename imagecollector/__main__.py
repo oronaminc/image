@@ -64,6 +64,43 @@ def cmd_collect(args) -> None:
         collector.close()
 
 
+def cmd_search(args) -> None:
+    """키워드로 상업적 사용 가능 이미지 몇 장을 찾아 다운로드.
+
+    --json 을 주면 결과를 JSON 으로 출력(다른 프로그램/AI 가 파싱하기 좋음).
+    """
+    import json
+    from .collector import Collector
+    config = load_config(args.config)
+    collector = Collector(config)
+    try:
+        results = collector.search(
+            keyword=args.keyword,
+            limit=args.limit,
+            category=args.category,
+            source_name=args.source,
+            attribution_free=args.no_attribution,
+        )
+    finally:
+        collector.close()
+
+    if args.json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+        return
+
+    if not results:
+        console.print(f"[yellow]'{args.keyword}' 에 대해 새로 받은 이미지가 없습니다.[/yellow] "
+                      "(이미 수집됐거나 결과가 없을 수 있어요)")
+        return
+    console.print(f"\n[bold green]'{args.keyword}' · {len(results)}장 다운로드[/bold green]")
+    for r in results:
+        attr = "표기필요" if r["attribution_required"] else "표기불필요"
+        console.print(f"  [green]✓[/green] {r['path']}")
+        console.print(f"      [{r['license'].upper()}] {attr} · {r['width']}×{r['height']} · {r['source']}")
+        if r["attribution_required"] and r["attribution"]:
+            console.print(f"      표기: {r['attribution']}")
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     config = load_config(args.config)
@@ -168,6 +205,16 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--query", action="append", help="검색어 직접 지정 (여러 번 가능)")
     sp.add_argument("--limit", type=int, help="검색어당 이미지 수")
     sp.set_defaults(func=cmd_collect)
+
+    sp = sub.add_parser("search", help="키워드로 이미지 검색·다운로드 (JSON 출력 가능)")
+    sp.add_argument("keyword", help="검색 키워드 (예: \"government building\")")
+    sp.add_argument("--limit", type=int, default=5, help="받을 이미지 수 (기본 5)")
+    sp.add_argument("--category", help="저장 카테고리 (기본: 키워드 슬러그)")
+    sp.add_argument("--source", choices=available_source_names(), help="소스 (기본: config)")
+    sp.add_argument("--no-attribution", action="store_true",
+                    help="저작자 표기 불필요(CC0/PDM 등) 이미지만")
+    sp.add_argument("--json", action="store_true", help="결과를 JSON 으로 출력")
+    sp.set_defaults(func=cmd_search)
 
     sp = sub.add_parser("serve", help="웹 뷰어 실행")
     sp.add_argument("--host", default="127.0.0.1")

@@ -71,11 +71,16 @@ class OpenverseSource(Source):
         while yielded < limit and page <= 20:
             params = {
                 "q": query,
-                "license_type": license_type,
                 "page": page,
                 "page_size": page_size,
                 "mature": mature,
             }
+            # attribution-free 검색 등에서 특정 라이선스만 요청(예: cc0,pdm)
+            license_override = getattr(self, "license_override", None)
+            if license_override:
+                params["license"] = license_override
+            else:
+                params["license_type"] = license_type
             try:
                 resp = self._get(f"{API_BASE}/images/", params=params,
                                  headers=self._headers())
