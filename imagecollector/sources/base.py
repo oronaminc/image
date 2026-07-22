@@ -18,6 +18,9 @@ class Source(ABC):
     label: str = "Base"
     #: 이 소스가 상업적 사용 가능 이미지를 제공하는지
     commercial_safe: bool = True
+    #: 소스별 권장 요청 간격(초). None 이면 config.request_delay 사용.
+    #  각 소스의 rate limit 에 맞춰 설정 (예: Openverse 20회/분, Pixabay 100회/분)
+    rate_delay: float | None = None
 
     def __init__(self, config: Config):
         self.config = config
@@ -35,8 +38,9 @@ class Source(ABC):
     # --- helpers ---
     def _get(self, url: str, params: dict | None = None, headers: dict | None = None,
              timeout: int = 30, max_retries: int = 3):
-        """429/5xx 재시도 + Retry-After 존중."""
-        delay = float(self.config.collection.get("request_delay", 0.6))
+        """429/5xx 재시도 + Retry-After 존중. 소스별 rate_delay 우선."""
+        delay = (self.rate_delay if self.rate_delay is not None
+                 else float(self.config.collection.get("request_delay", 1.0)))
         for attempt in range(max_retries):
             resp = self.session.get(url, params=params, headers=headers, timeout=timeout)
             # 429(rate limit), 401/403(스로틀링 시 발생), 5xx 는 백오프 후 재시도

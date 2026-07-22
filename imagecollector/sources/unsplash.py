@@ -17,6 +17,7 @@ class UnsplashSource(Source):
     name = "unsplash"
     label = "Unsplash"
     commercial_safe = True
+    rate_delay = 2.0  # 데모 50회/시 · 승인 후 상향
 
     def available(self) -> tuple[bool, str]:
         if self.config.env("UNSPLASH_ACCESS_KEY"):

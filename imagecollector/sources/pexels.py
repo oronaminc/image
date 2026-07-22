@@ -16,6 +16,7 @@ class PexelsSource(Source):
     name = "pexels"
     label = "Pexels"
     commercial_safe = True
+    rate_delay = 2.0  # 200회/시 · 필요시 조정
 
     def available(self) -> tuple[bool, str]:
         if self.config.env("PEXELS_API_KEY"):

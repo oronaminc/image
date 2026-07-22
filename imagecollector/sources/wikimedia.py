@@ -38,6 +38,7 @@ class WikimediaSource(Source):
     name = "wikimedia"
     label = "Wikimedia Commons"
     commercial_safe = True
+    rate_delay = 0.6  # 넉넉한 편
 
     def available(self) -> tuple[bool, str]:
         return True, "키 없이 사용 가능"

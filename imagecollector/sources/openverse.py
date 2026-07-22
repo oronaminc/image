@@ -20,6 +20,7 @@ class OpenverseSource(Source):
     name = "openverse"
     label = "Openverse"
     commercial_safe = True
+    rate_delay = 3.5  # 익명 20회/분 준수 (여유)
 
     def __init__(self, config):
         super().__init__(config)

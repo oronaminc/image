@@ -16,6 +16,7 @@ class PixabaySource(Source):
     name = "pixabay"
     label = "Pixabay"
     commercial_safe = True
+    rate_delay = 0.8  # 100회/분 허용 → 빠르게
 
     def available(self) -> tuple[bool, str]:
         if self.config.env("PIXABAY_API_KEY"):

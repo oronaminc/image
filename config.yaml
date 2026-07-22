@@ -1,8 +1,9 @@
 # =====================================================================
-#  Image Collector  ·  설정 파일 (블로그 포스팅용)
-#  - 카테고리별 검색어로 상업적 사용 가능한 무료 이미지를 모읍니다.
-#  - 무료 이미지 소스는 영어 색인이 훨씬 풍부하므로 검색어는 영어로 둡니다.
+#  Image Collector  ·  설정 파일 (블로그 포스팅용, 확장판)
+#  - 36개 카테고리 × 검색어로 상업적 사용 가능한 무료 이미지를 모읍니다.
+#  - 무료 소스는 영어 색인이 풍부하므로 검색어는 영어로 둡니다.
 #    (카테고리 이름 옆 주석이 한국어 블로그 주제입니다.)
+#  - 요청 간격은 소스별로 자동 최적화됩니다(Openverse 20/분, Pixabay 100/분 등).
 # =====================================================================
 
 storage:
@@ -12,134 +13,266 @@ storage:
   thumbnail_size: 400
 
 collection:
-  default_source: pixabay      # 블로그용 기본(표기 불필요). 키 없으면 openverse 로 변경
+  default_source: pixabay       # 블로그용 기본(표기 불필요). 키 없으면 openverse
   license_type: commercial      # commercial | commercial,modification
   safe_search: true
-  per_category_limit: 12        # 검색어당 수집 개수
+  per_category_limit: 20        # 검색어당 수집 개수
   min_width: 600
   min_height: 400
-  # Openverse 익명 한도(분당 20회)를 지키려면 4초 이상 권장. (API 키 등록 시 낮춰도 됨)
-  request_delay: 4.0
+  request_delay: 1.0            # 폴백값(소스별 rate_delay 가 우선)
   near_dup_threshold: 0
   user_agent: "ImageCollector/1.0 (+https://github.com/oronaminc/image)"
 
 categories:
-  politics:              # 정치
-    - government building
-    - election voting
-    - parliament congress
-    - protest rally
-    - politician speech podium
-    - national flag
-  entertainment:         # 연예
-    - concert stage
-    - movie theater cinema
-    - microphone singer
-    - red carpet event
-    - music festival crowd
-    - spotlight performance
-  subsidy:               # 지원금
-    - cash money hand
-    - financial aid support
-    - government welfare
-    - bank counter
-    - receiving money
-    - benefit document
-  money:                 # 돈
-    - money banknotes
-    - coins stack
-    - piggy bank savings
-    - wallet cash
-    - credit card payment
-    - gold bars
-  economy:               # 경제
-    - stock market chart
-    - financial graph
-    - business trading
-    - city financial district
-    - economic growth arrow
-    - handshake business deal
-  daily-life:            # 일상
-    - morning coffee
-    - city commute
-    - home living room
-    - cooking dinner
-    - walking in park
-    - grocery shopping
-  emotion:               # 감정
-    - happy smile
-    - sad lonely
-    - angry frustrated
-    - calm peaceful meditation
-    - stressed worried
-    - excited celebration joy
-  health:                # 건강
-    - running exercise
-    - healthy food salad
-    - hospital medical
-    - yoga meditation
-    - sleeping rest
-    - doctor patient
-  work:                  # 직장/업무
-    - office workspace
-    - laptop desk work
-    - team meeting
-    - business handshake
-    - coworking space
-    - presentation whiteboard
-  technology:            # 기술/IT
-    - smartphone in hand
-    - computer code screen
-    - artificial intelligence
-    - data server room
-    - robot technology
-    - network connection
-  travel:                # 여행
-    - airplane travel
-    - beach vacation
-    - mountain hiking
-    - city skyline
-    - road trip car
-    - hotel room
-  food:                  # 음식
-    - korean food
-    - coffee cafe
-    - dessert cake
-    - restaurant meal
-    - fresh fruit
-    - cooking ingredients
-  nature:                # 자연
-    - forest landscape
-    - ocean sunset
-    - mountain scenery
-    - flower garden
-    - sky clouds
-    - waterfall
-  education:             # 교육
-    - student studying
-    - books library
-    - classroom
-    - graduation
-    - online learning
-    - writing notes
-  family:                # 가족
-    - family together
-    - parent and child
-    - elderly couple
-    - baby infant
-    - home family dinner
-    - children playing
-  sports:                # 스포츠
-    - soccer football
-    - marathon running
-    - gym fitness
-    - basketball
-    - swimming pool
-    - cycling bike
-  season-weather:        # 날씨/계절
-    - rain umbrella
-    - snow winter
-    - autumn leaves
-    - spring cherry blossom
+  politics:            # 정치
+    - politics debate
+    - government policy
+    - city hall building
+    - election campaign
+    - ballot box vote
+    - diplomacy meeting
+  entertainment:       # 연예
+    - tv studio
+    - film production
+    - awards show
+    - dance performance
+    - live band concert
+    - stage spotlight
+  subsidy:             # 지원금
+    - welfare benefit
+    - unemployment support
+    - child allowance
+    - social security card
+    - financial help hand
+    - government grant document
+  money:               # 돈
+    - dollar bills
+    - korean won money
+    - saving money jar
+    - atm machine
+    - tax calculation
+    - budget planning
+  economy:             # 경제
+    - inflation price rising
+    - global economy
+    - supply chain logistics
+    - factory production
+    - economic growth chart
+    - stock market crash
+  daily-life:          # 일상
+    - morning routine
+    - doing laundry
+    - watching television
+    - scrolling smartphone
+    - taking notes
+    - cleaning house
+  emotion:             # 감정
+    - crying tears
+    - laughing joy
+    - anxiety fear
+    - love affection
+    - tired exhausted
+    - surprise shock face
+  health:              # 건강
+    - blood pressure check
+    - healthy lifestyle
+    - vitamins supplement
+    - dental care
+    - mental health
+    - medical checkup
+  work:                # 직장/업무
+    - business meeting
+    - remote work home
+    - deadline stress
+    - team brainstorming
+    - office desk
+    - video conference call
+  technology:          # 기술/IT
+    - smartphone app
+    - cloud computing
+    - cybersecurity
+    - virtual reality headset
+    - software developer coding
+    - smart home device
+  travel:              # 여행
+    - passport airport
+    - backpacker traveler
+    - tropical resort
+    - city sightseeing
+    - train journey
+    - packing suitcase
+  food:                # 음식
+    - korean bbq
+    - street food
+    - home cooking
+    - bakery bread
+    - sushi japanese food
+    - vegetarian salad
+  nature:              # 자연
+    - sunset sky
+    - green forest path
+    - river stream
+    - desert sand dune
+    - northern lights aurora
+    - wild animals
+  education:           # 교육
+    - online class laptop
+    - exam test paper
+    - university campus
+    - teacher lecture
+    - children learning
+    - science project
+  family:              # 가족
+    - family picnic
+    - siblings playing
+    - grandparents
+    - family vacation
+    - parenting baby
+    - family dinner table
+  sports:              # 스포츠
+    - soccer match
+    - basketball game
+    - tennis player
+    - golf course
+    - baseball
+    - martial arts
+  season-weather:      # 계절/날씨
+    - cherry blossom spring
     - summer beach sun
-    - clear blue sky
+    - autumn foliage
+    - winter snow
+    - rainy day umbrella
+    - foggy morning
+  business:            # 비즈니스
+    - startup team
+    - corporate building
+    - business growth
+    - entrepreneur working
+    - business negotiation
+    - office teamwork
+  finance-invest:      # 투자/금융
+    - stock trading chart
+    - cryptocurrency bitcoin
+    - real estate investment
+    - gold investment
+    - pension retirement fund
+    - financial advisor
+  shopping:            # 쇼핑
+    - online shopping
+    - shopping mall
+    - retail store
+    - discount sale tag
+    - gift box present
+    - delivery courier package
+  beauty:              # 뷰티
+    - skincare routine
+    - makeup cosmetics
+    - hair styling salon
+    - spa treatment
+    - perfume bottle
+    - manicure nails
+  fashion:             # 패션
+    - fashion outfit
+    - runway fashion model
+    - sneakers shoes
+    - handbag purse
+    - jewelry accessories
+    - streetwear style
+  interior:            # 인테리어
+    - modern living room
+    - kitchen interior
+    - cozy bedroom
+    - home office setup
+    - minimalist decor
+    - scandinavian interior
+  car:                 # 자동차
+    - electric car
+    - luxury car
+    - car dashboard interior
+    - highway driving
+    - car charging station
+    - vintage classic car
+  pet:                 # 반려동물
+    - cute dog
+    - kitten cat
+    - pet grooming
+    - dog walking
+    - aquarium fish
+    - pet food bowl
+  wedding:             # 결혼
+    - wedding ceremony
+    - bride bouquet
+    - wedding rings
+    - engagement couple
+    - wedding venue decoration
+    - groom suit
+  culture-art:         # 문화/예술
+    - art museum gallery
+    - oil painting
+    - sculpture statue
+    - street art graffiti
+    - ballet dance
+    - orchestra concert
+  science:             # 과학
+    - laboratory research
+    - microscope
+    - space galaxy stars
+    - chemistry experiment
+    - dna genetics
+    - physics formula
+  medical:             # 의료
+    - doctor stethoscope
+    - hospital ward
+    - medicine pills
+    - vaccine injection
+    - surgery operation
+    - nurse patient care
+  environment:         # 환경
+    - solar energy panel
+    - wind turbine
+    - recycling waste
+    - plastic pollution ocean
+    - climate change
+    - tree planting
+  city-life:           # 도시
+    - city skyline night
+    - subway station
+    - busy crosswalk
+    - traffic jam
+    - skyscraper building
+    - urban street
+  countryside:         # 시골/농촌
+    - rice field
+    - farm barn
+    - rural village
+    - tractor farming
+    - vegetable garden
+    - autumn harvest
+  senior:              # 시니어/노인
+    - elderly couple
+    - senior citizen smiling
+    - retirement life
+    - grandmother portrait
+    - senior health care
+    - nursing home
+  job-career:          # 취업/커리어
+    - job interview
+    - resume cv document
+    - career growth ladder
+    - handshake hiring
+    - graduation ceremony
+    - business networking
+  law-justice:         # 법/정의
+    - courtroom
+    - judge gavel
+    - lawyer office
+    - justice scale
+    - legal contract signing
+    - police officer
+  love-couple:         # 연애/사랑
+    - romantic couple
+    - holding hands
+    - date night dinner
+    - valentine heart
+    - marriage proposal
+    - couple hug
