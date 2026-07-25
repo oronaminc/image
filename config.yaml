@@ -15,6 +15,7 @@ storage:
 collection:
   default_source: pixabay       # 블로그용 기본(표기 불필요). 키 없으면 openverse
   license_type: commercial      # commercial | commercial,modification
+  order: latest                 # (Pixabay) latest=최신 업로드순 | popular=인기순
   safe_search: true
   per_category_limit: 40        # 검색어당 수집 개수
   min_width: 600

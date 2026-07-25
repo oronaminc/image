@@ -39,6 +39,8 @@ class PixabaySource(Source):
                 "safesearch": safe,
                 "per_page": per_page,
                 "page": page,
+                # popular(인기순, 기본) | latest(최신 업로드순)
+                "order": self.config.collection.get("order", "popular"),
             }
             try:
                 resp = self._get(API, params=params)

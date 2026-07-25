@@ -178,6 +178,50 @@ def cmd_dedup(args) -> None:
         conn.close()
 
 
+def cmd_prune(args) -> None:
+    """조건에 맞는 이미지를 라이브러리+디스크에서 삭제.
+
+    예:
+      prune --source openverse            # 특정 소스 전부 삭제
+      prune --category politics           # 특정 카테고리 삭제
+      prune --source pixabay --max-source-id 8000000   # 오래된 Pixabay(저ID) 삭제
+    """
+    config = load_config(args.config)
+    conn = db.connect(config.db_path)
+    try:
+        where, params = [], []
+        if args.source:
+            where.append("source = ?"); params.append(args.source)
+        if args.category:
+            where.append("category = ?"); params.append(args.category)
+        if args.max_source_id is not None:
+            where.append("CAST(source_id AS INTEGER) < ?"); params.append(args.max_source_id)
+        if not where:
+            console.print("[red]최소 하나의 필터가 필요합니다: --source / --category / --max-source-id[/red]")
+            return
+        clause = " AND ".join(where)
+        rows = conn.execute(
+            f"SELECT id, filepath, thumbnail_path FROM images WHERE {clause}", params
+        ).fetchall()
+        console.print(f"삭제 대상: [bold]{len(rows)}장[/bold]  (조건: {clause})")
+        if not rows:
+            return
+        if args.dry_run:
+            console.print("[yellow]--dry-run: 실제로는 삭제하지 않았습니다.[/yellow]")
+            return
+        n = 0
+        for r in rows:
+            (config.images_dir / r["filepath"]).unlink(missing_ok=True)
+            if r["thumbnail_path"]:
+                (config.thumbnails_dir / r["thumbnail_path"]).unlink(missing_ok=True)
+            conn.execute("DELETE FROM images WHERE id = ?", (r["id"],))
+            n += 1
+        conn.commit()
+        console.print(f"[green]{n}장 삭제 완료.[/green]")
+    finally:
+        conn.close()
+
+
 def cmd_sources(args) -> None:
     config = load_config(args.config)
     t = Table(title="이미지 소스", title_style="bold cyan")
@@ -232,6 +276,14 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--threshold", type=int, default=5, help="해밍거리 임계값 (작을수록 엄격)")
     sp.add_argument("--delete", action="store_true", help="실제로 삭제")
     sp.set_defaults(func=cmd_dedup)
+
+    sp = sub.add_parser("prune", help="조건(소스/카테고리/ID)으로 이미지 삭제")
+    sp.add_argument("--source", help="이 소스의 이미지 삭제 (예: openverse)")
+    sp.add_argument("--category", help="이 카테고리의 이미지 삭제")
+    sp.add_argument("--max-source-id", type=int,
+                    help="source_id 가 이 값 미만인 것 삭제 (Pixabay 오래된 업로드 정리용)")
+    sp.add_argument("--dry-run", action="store_true", help="삭제하지 않고 대상 수만 표시")
+    sp.set_defaults(func=cmd_prune)
 
     sp = sub.add_parser("sources", help="사용 가능한 소스 목록")
     sp.set_defaults(func=cmd_sources)
