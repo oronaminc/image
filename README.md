@@ -1,8 +1,8 @@
 # 🖼️ Image Collector
 
 상업적 사용에 안전한 **무료 이미지 수집기 + 웹 뷰어**입니다.
-카테고리별로 이미지를 로컬에 모으고, 라이선스·저작자 정보를 자동으로 관리하며,
-브라우저에서 갤러리처럼 볼 수 있습니다.
+블로그 포스팅 등에 쓸 이미지를 카테고리별로 로컬에 모으고, 라이선스·저작자·태그를
+자동으로 관리하며, 브라우저 갤러리에서 라이브로 볼 수 있습니다.
 
 > AI 이미지 생성이 어려울 때, 상업적으로 써도 되는 무료 이미지를 체계적으로 모아
 > 나만의 이미지 라이브러리를 만드는 것이 목표입니다.
@@ -13,12 +13,13 @@
 
 | 기능 | 설명 |
 |------|------|
-| 📋 **라이선스 추적 + 상업적 사용 필터** | NC(비영리)/ND(변형금지) 자동 판별. 상업적 사용 가능 이미지만 수집(기본값) |
-| 📝 **저작자 표기 자동 생성** | CC-BY 등 표기가 필요한 이미지의 attribution 문자열 자동 생성·내보내기 |
+| 📋 **라이선스 필터** | 상업적 사용 가능(NC/ND 제외)만 수집. CC·공공누리(KOGL)·Pixabay/Pexels 라이선스 판별 |
+| 📝 **저작자 표기 자동 생성** | 표기가 필요한 이미지의 attribution 문구 자동 생성·내보내기 |
+| 🆕 **최신 사진만** | Pixabay 최신 업로드순 + 2024년 이후만 수집(연도 필터) |
+| 🏷️ **한국어 태그** | 카테고리·검색어를 한국어 태그로 자동 부여 |
 | 🔁 **중복 제거** | SHA-256(정확 중복) + 지각적 해시 dhash(유사 중복) |
-| 🏷️ **메타데이터 관리** | 카테고리·검색어·태그·해상도·저작자·출처를 SQLite DB로 관리, 깔끔한 파일명 규칙 |
-| 🖼️ **웹 뷰어** | 갤러리·필터·검색·즐겨찾기·삭제·통계·저작자표기 페이지 |
-| 🔌 **멀티 소스(플러그인)** | Openverse·Wikimedia(키 불필요) + Pexels·Pixabay·Unsplash(키 추가 시) |
+| 🖼️ **라이브 웹 뷰어** | 갤러리·필터·검색·즐겨찾기·삭제·통계 + 새 이미지 실시간 감지 |
+| 🔌 **멀티 소스(플러그인)** | Pixabay·Pexels·Unsplash(키) + Openverse·Wikimedia(키 불필요) |
 | ♻️ **증분 수집** | 이미 받은 이미지는 자동 건너뜀. 썸네일 자동 생성 |
 
 ---
@@ -31,19 +32,19 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# 2) (선택) 설정/폴더 초기화 — 저장소에 이미 config.yaml 이 있어 생략 가능
-python -m imagecollector init
+# 2) API 키 설정 (기본 소스 Pixabay 사용 시)
+cp .env.example .env
+#  → .env 의 PIXABAY_API_KEY 에 무료 키 입력 (https://pixabay.com/api/docs/)
+#  키 없이 시작하려면 config.yaml 의 default_source 를 openverse 로 바꾸세요(키 불필요).
 
 # 3) 이미지 수집 (config.yaml 의 카테고리·검색어대로)
 python -m imagecollector collect
 
-# 4) 웹 뷰어 실행 → 브라우저에서 http://127.0.0.1:8765
+# 4) 웹 뷰어 실행 → http://127.0.0.1:8765
 python -m imagecollector serve
 ```
 
-키 없이 **Openverse**로 바로 시작됩니다.
-
-> 🤖 **블로그 포스팅 AI(다른 Claude)가 이 도구를 쓴다면** → [`AGENTS.md`](AGENTS.md) 를 참고하세요.
+> 🤖 **블로그 포스팅 AI(다른 Claude)가 이 도구를 쓴다면** → [`AGENTS.md`](AGENTS.md) 참고.
 > 핵심은 `python -m imagecollector search "<키워드>" --limit 3 --json` 한 줄입니다.
 
 ---
@@ -51,34 +52,36 @@ python -m imagecollector serve
 ## 🧰 명령어
 
 ```bash
-# 키워드로 상업적 사용 가능 이미지 검색·다운로드 (블로그용 핵심 기능)
-python -m imagecollector search "government building" --limit 5
-python -m imagecollector search "money coins" --limit 5 --no-attribution   # CC0만(표기 불필요)
-python -m imagecollector search "coffee" --limit 3 --json                  # JSON 출력(자동화용)
+# 키워드로 이미지 검색·다운로드 (블로그용 핵심). --json 으로 기계가 읽는 출력
+python -m imagecollector search "coffee cafe" --limit 5
+python -m imagecollector search "money" --limit 5 --no-attribution --json   # 표기 불필요만
 
-# 전체 수집 (config.yaml 기준)
+# 실존 인물 등은 Wikimedia 에서 (스톡엔 없음)
+python -m imagecollector search "Lee Jae-myung" --source wikimedia --category korea-politics
+
+# 전체 수집 (config.yaml 기준) / 소스·카테고리·개수 지정
 python -m imagecollector collect
+python -m imagecollector collect --source pixabay --category nature --limit 30
 
-# 특정 소스/카테고리/개수 지정
-python -m imagecollector collect --source openverse --category nature --limit 30
+# 웹 뷰어 (기본 포트 8765)
+python -m imagecollector serve --port 8765
 
-# 검색어 직접 지정 (config 무시)
-python -m imagecollector collect --query "cyberpunk city" --query "neon street" --category custom
-
-# 웹 뷰어
-python -m imagecollector serve --host 0.0.0.0 --port 8765
-
-# 통계
+# 통계 / 저작자 표기 내보내기(ATTRIBUTIONS.md)
 python -m imagecollector stats
-
-# 저작자 표기 파일 내보내기 (ATTRIBUTIONS.md)
 python -m imagecollector export-attributions
 
-# 유사 중복 탐지 (거리 작을수록 엄격). --delete 로 실제 삭제
-python -m imagecollector dedup --threshold 5
+# 유사 중복 탐지·삭제
 python -m imagecollector dedup --threshold 5 --delete
 
-# 사용 가능한 소스 / 키 상태 확인
+# 이미지 삭제 (소스/카테고리/업로드ID 기준)
+python -m imagecollector prune --source openverse                    # 특정 소스 전부
+python -m imagecollector prune --source pixabay --max-source-id 9000000  # 오래된 것
+python -m imagecollector prune --category politics --dry-run          # 미리보기
+
+# 모든 태그를 한국어로 재설정
+python -m imagecollector retag
+
+# 소스/키 상태 확인
 python -m imagecollector sources
 ```
 
@@ -86,63 +89,70 @@ python -m imagecollector sources
 
 ## 🔑 이미지 소스와 라이선스
 
-| 소스 | API 키 | 라이선스 | 상업적 사용 |
-|------|--------|----------|-------------|
-| **Openverse** | 불필요 | CC0/PDM/CC-BY/CC-BY-SA 등 | ✅ (NC/ND 자동 제외) |
-| **Wikimedia Commons** | 불필요 | 퍼블릭도메인/CC | ✅ (NC 자동 제외) |
-| **Pexels** | 무료 키 | Pexels License | ✅ 표기 불필요 |
-| **Pixabay** | 무료 키 | Pixabay License | ✅ 표기 불필요 |
-| **Unsplash** | 무료 키 | Unsplash License | ✅ (API 가이드라인 준수 필요) |
+| 소스 | API 키 | 상업 사용 | 저작자 표기 | 특징 |
+|------|--------|-----------|-------------|------|
+| **Pixabay** (기본·추천) | 무료 키 | ✅ | **불필요** | 사진+일러스트, 최신순·품질 일관 |
+| **Pexels** | 무료 키 | ✅ | **불필요** | 고급 사진 |
+| **Unsplash** | 무료 키 | ✅ | 권장 | 예술적 사진(API 약관 유의) |
+| **Openverse** | 불필요 | ✅ | 대부분 필요 | CC 아카이브(다양·옛날 많음) |
+| **Wikimedia** | 불필요 | ✅ | 라이선스별 | 실존 인물·장소·자료(CC/공공누리) |
 
-키가 필요한 소스는 `.env.example` 을 복사해 `.env` 에 키를 넣으면 활성화됩니다.
+키가 필요한 소스는 `.env.example` 을 `.env` 로 복사해 키를 채우면 활성화됩니다.
 
-```bash
-cp .env.example .env
-# .env 파일을 열어 PEXELS_API_KEY 등을 채우세요
-```
+### ⚖️ 상업적 사용 안내 (중요)
 
-### ⚖️ 상업적 사용에 대한 안내 (중요)
+- 기본값 `license_type: commercial` → **상업적 사용 가능 라이선스만** 수집하고,
+  `licenses.py` 에서 규칙(NC/ND, 공공누리 유형 등)으로 한 번 더 검증합니다.
+- **Pixabay/Pexels/CC0/PDM** = 저작자 표기 불필요 → 블로그에 바로 사용.
+- **CC-BY / CC-BY-SA / 공공누리 제1·2유형** = 상업 가능하나 **표기 필수**.
+  `export-attributions` 또는 웹 `/attributions` 에서 문구를 받아 표기하세요.
+- 이 도구는 편의용이며 **법률 자문이 아닙니다.** 최종 사용 전 각 이미지의 라이선스 원문 확인 권장.
 
-- 기본 설정(`license_type: commercial`)은 **상업적 사용이 허용된 라이선스만** 수집합니다.
-  소스가 준 라이선스 코드를 `licenses.py` 에서 한 번 더 규칙으로 검증합니다.
-- **CC-BY / CC-BY-SA** 는 상업적 사용은 가능하지만 **저작자 표기가 필수**입니다.
-  `python -m imagecollector export-attributions` 또는 웹의 `/attributions` 페이지에서
-  표기 문구를 받아 실제 사용처(웹사이트·영상·인쇄물 등)에 함께 표기하세요.
-- **CC-BY-SA** 는 2차 저작물에 동일 라이선스를 적용해야 할 수 있습니다(ShareALike).
-- 표기가 전혀 필요 없는 것만 원하면 `config.yaml` 에서
-  카테고리를 CC0/퍼블릭도메인 위주 소스로 좁히거나, 수집 후 라이선스로 필터하세요.
-- 이 도구는 편의를 위한 것이며 **법률 자문이 아닙니다.** 최종 사용 전 각 이미지의
-  라이선스 원문(상세 페이지의 "라이선스 전문" 링크)을 확인하는 것을 권장합니다.
+---
+
+## 🆕 최신 사진만 (2024년 이후)
+
+- **Pixabay**: `order: latest`(최신 업로드순) + `min_source_id`(업로드ID 기준 필터).
+  ID 9,000,000 ≈ 2024년 → `min_source_id: 9000000` 이면 2024년 이후만 수집.
+- **Wikimedia**: `min_year: 2024` → 촬영연도(또는 파일명 연도)가 2024 미만이거나
+  연도 불명이면 제외.
+- 이미 쌓인 옛날 이미지는 `prune --source pixabay --max-source-id 9000000` 로 정리.
+
+## 🏷️ 한국어 태그
+
+수집·검색 시 각 이미지에 **`한국어 카테고리, 한국어 검색어`** 형태의 태그가 자동으로 붙습니다
+(예: `정치, 국회` / `반려동물, 새끼 고양이`). 매핑은 `imagecollector/korean.py` 에 있고,
+기존 이미지는 `python -m imagecollector retag` 로 일괄 변경합니다.
+
+## 🖥️ 라이브 웹 뷰어 · 항상 켜두기
+
+- 갤러리는 **6초마다 새 이미지를 감지**해 "🆕 새 이미지 도착" 배너를 띄웁니다(라이브).
+- 서버를 **항상 켜두는 방법**은 [`deploy/README.md`](deploy/README.md) 참고
+  (권장: `nohup bash run_viewer.sh 8765 &` — 죽으면 자동 재시작).
 
 ---
 
 ## ⚙️ 설정 (`config.yaml`)
 
 ```yaml
-storage:
-  images_dir: images          # 원본 저장 폴더
-  thumbnails_dir: thumbnails
-  database: library.db
-  thumbnail_size: 400
-
 collection:
-  default_source: openverse
-  license_type: commercial     # commercial | commercial,modification
+  default_source: pixabay      # pixabay | openverse | wikimedia | pexels | unsplash
+  license_type: commercial     # 상업 사용 가능만
+  order: latest                # (Pixabay) latest 최신순 | popular 인기순
+  min_source_id: 9000000       # (Pixabay) 이 업로드ID 이상 = 약 2024+. 0=제한없음
+  min_year: 2024               # (Wikimedia) 이 연도 이후만. 0=제한없음
   safe_search: true
   per_category_limit: 40       # 검색어당 수집 개수
   min_width: 600               # 최소 해상도 (0=제한없음)
   min_height: 400
+  request_delay: 1.0           # 폴백(소스별 rate_delay 우선)
   near_dup_threshold: 0        # 수집 중 유사중복 스킵(해밍거리). 0=끔
 
 categories:
-  nature:
-    - forest landscape
-    - mountain sunrise
-  business:
-    - modern office workspace
+  politics: [government policy, election voting, ...]
+  money:    [dollar bills, coins stack, ...]
+  # ... 원하는 만큼 카테고리·검색어 추가
 ```
-
-`categories` 아래에 원하는 만큼 카테고리와 검색어를 추가하세요.
 
 ---
 
@@ -151,22 +161,17 @@ categories:
 ```
 image/
 ├── config.yaml               # 카테고리·검색어·수집 설정
-├── .env.example              # (선택) API 키 템플릿
+├── .env.example / .env       # API 키 (.env 는 git 제외)
 ├── requirements.txt
-├── images/<category>/...     # 원본 이미지 (git 제외)
-├── thumbnails/<category>/... # 썸네일 (git 제외)
+├── run_viewer.sh             # 뷰어 항상 켜두기(자동 재시작)
+├── deploy/                   # launchd 서비스 + 항상 켜두기 가이드
+├── images/ thumbnails/       # 원본·썸네일 (git 제외)
 ├── library.db                # 메타데이터 SQLite (git 제외)
 └── imagecollector/
-    ├── __main__.py           # CLI (collect/serve/stats/dedup/...)
-    ├── config.py             # 설정 로딩
-    ├── licenses.py           # 라이선스 판별(상업/변형/표기)
-    ├── dedup.py              # sha256 + dhash 중복 제거
-    ├── db.py                 # SQLite 스키마·쿼리
-    ├── images.py             # 다운로드·파일명·썸네일
+    ├── __main__.py           # CLI (collect/search/serve/prune/retag/...)
+    ├── config.py licenses.py dedup.py db.py images.py korean.py
     ├── collector.py          # 수집 오케스트레이션
-    ├── sources/              # 소스 플러그인
-    │   ├── openverse.py  wikimedia.py
-    │   └── pexels.py  pixabay.py  unsplash.py
+    ├── sources/              # openverse·wikimedia·pixabay·pexels·unsplash
     └── web/                  # FastAPI 웹 뷰어 (templates/static)
 ```
 
@@ -174,9 +179,7 @@ image/
 
 ## 💡 팁
 
-- **로컬 데이터는 git에 올라가지 않습니다.** `images/`, `thumbnails/`, `library.db`, `.env`
-  는 `.gitignore` 에 있습니다. 코드·설정만 커밋됩니다.
-- 매일/주기적으로 `collect` 를 돌리면 새 이미지만 증분으로 쌓입니다.
-- 웹 뷰어에서 마음에 드는 이미지를 ⭐즐겨찾기 하고, 필요 없는 건 🗑삭제할 수 있습니다.
-- 새 소스를 추가하려면 `imagecollector/sources/base.py` 의 `Source` 를 상속해
-  `sources/__init__.py` 레지스트리에 등록하면 됩니다.
+- **로컬 데이터는 git에 안 올라갑니다.** `images/`, `thumbnails/`, `library.db`, `.env`,
+  `.viewer.log` 는 `.gitignore` 에 있습니다. 코드·설정만 커밋됩니다.
+- 실존 인물(정치인·유명인)은 스톡에 없으니 `--source wikimedia` 로 찾으세요.
+- 새 소스를 추가하려면 `sources/base.py` 의 `Source` 를 상속해 `sources/__init__.py` 에 등록.

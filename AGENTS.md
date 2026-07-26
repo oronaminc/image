@@ -13,21 +13,30 @@ source .venv/bin/activate
 python -m imagecollector search "<키워드>" --limit 3 --json
 ```
 
-- **기본 소스는 Pixabay** 입니다 → 반환 이미지는 대부분 **저작자 표기 불필요**(`attribution_required: false`).
-  블로그에 크레딧 없이 바로 넣을 수 있습니다.
-- `<키워드>`는 **영어**가 결과가 훨씬 많습니다. (예: 정치→`government building`, 지원금→`financial support`)
-- `--json` 을 붙이면 아래 형식의 JSON 배열이 stdout 으로 나옵니다. 이걸 파싱해서 쓰세요.
-- 항상 **최대 `--limit` 개의 사용 가능한 이미지**를 돌려줍니다.
-  (새로 다운로드가 부족하면 이미 모아둔 라이브러리에서 채워 줍니다. → 결과가 비지 않음)
+- **기본 소스는 Pixabay** → 반환 이미지는 대부분 **저작자 표기 불필요**(`attribution_required: false`),
+  그리고 **2024년 이후 최신** 사진입니다. 블로그에 크레딧 없이 바로 넣을 수 있습니다.
+- **새로 다운로드**할 땐 `<키워드>`를 **영어**로 (Pixabay 결과가 많음).
+  이미 모아둔 라이브러리 검색은 **한국어**도 됩니다(태그가 한국어라 매칭됨).
+- 항상 **최대 `--limit` 개**를 돌려줍니다. 새 다운로드가 부족하면 라이브러리에서 채워
+  결과가 비지 않습니다.
 
-### 저작자 표기가 부담되면 (권장: 표기 없이 쓰고 싶을 때)
+### 표기 없이 쓰고 싶으면 (가장 안전)
 
 ```bash
 python -m imagecollector search "<키워드>" --limit 3 --no-attribution --json
 ```
 
-`--no-attribution` 을 붙이면 **CC0/퍼블릭도메인**만 반환합니다.
-→ 블로그에 저작자 표기 없이 그냥 넣어도 됩니다. **가장 안전하고 편합니다.**
+`--no-attribution` = CC0/퍼블릭도메인 등 **표기 불필요**만 반환.
+
+### 실존 인물(정치인·유명인)은 Wikimedia 에서
+
+```bash
+python -m imagecollector search "Lee Jae-myung" --source wikimedia --category korea-politics --json
+```
+
+스톡(Pixabay)에는 특정 실존 인물이 없습니다. Wikimedia 는 CC/공공누리(KOGL) 사진을 제공하며,
+`min_year` 설정에 따라 2024년 이후 사진만 나옵니다. 이 경우 `attribution_required: true` 가
+많으니 `attribution` 문구를 함께 표기하세요.
 
 ---
 
@@ -36,81 +45,78 @@ python -m imagecollector search "<키워드>" --limit 3 --no-attribution --json
 ```json
 [
   {
-    "id": 75,
-    "title": "Money Coins",
-    "keyword": "money coins",
-    "path": "/Users/1113177/Desktop/github/image/images/money-coins/money-coins__openverse-....jpg",
-    "thumbnail": "/Users/.../thumbnails/money-coins/....jpg",
-    "width": 960, "height": 640, "format": "jpeg",
-    "source": "openverse",
-    "source_url": "https://stocksnap.io/photo/....",
-    "license": "cc0",
-    "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "id": 1234,
+    "title": "coffee",
+    "category": "coffee-cafe",
+    "keyword": "coffee cafe",
+    "path": "/Users/1113177/Desktop/github/image/images/coffee-cafe/coffee__pixabay-10391990.jpg",
+    "thumbnail": "/Users/.../thumbnails/coffee-cafe/coffee__pixabay-10391990.jpg",
+    "width": 1920, "height": 1280, "format": "jpeg",
+    "source": "pixabay",
+    "source_url": "https://pixabay.com/photos/....",
+    "license": "pixabay",
+    "license_url": "https://pixabay.com/service/license-summary/",
     "commercial_use": true,
     "modification_allowed": true,
     "attribution_required": false,
-    "attribution": "\"Money Coins\" by Negative Space is marked with CC0 1.0. ...",
-    "creator": "Negative Space"
+    "attribution": null,
+    "creator": "Alexas_Fotos"
   }
 ]
 ```
 
-### 각 필드 사용법
 | 필드 | 블로그에서 하는 일 |
 |------|-------------------|
-| `path` | 블로그에 넣을 **로컬 이미지 파일의 절대경로**. 이 파일을 업로드/삽입하세요. |
-| `commercial_use` | `true` 여야 상업적 사용 가능 (도구가 이미 `true`만 수집하지만 재확인용) |
-| `attribution_required` | `true` 면 아래 `attribution` 문구를 포스트에 반드시 표기 |
+| `path` | 블로그에 넣을 **로컬 이미지 절대경로**. 이 파일을 업로드/삽입 |
+| `commercial_use` | `true` 여야 상업적 사용 가능 (도구가 기본으로 `true`만 수집) |
+| `attribution_required` | `true` 면 `attribution` 문구를 포스트에 표기 |
 | `attribution` | 표기가 필요할 때 그대로 넣을 저작자 표기 문구 |
-| `source_url` | 원본 출처 페이지 (표기 시 함께 링크하면 좋음) |
+| `source_url` | 원본 출처 페이지 |
 
 ---
 
 ## ⚖️ 규칙 (반드시 지킬 것)
 
-1. **`commercial_use: true` 인 이미지만 사용** — 도구가 기본으로 이것만 수집하지만, 직접 파일을
-   가져다 쓸 때도 이 값을 확인하세요.
-2. **`attribution_required: true` 이면** 포스트 하단 등에 `attribution` 문구를 표기하세요.
-   예: `이미지 출처: "Money Coins" by Negative Space (CC BY 2.0)`
-3. **표기가 번거로우면 `--no-attribution` 으로 CC0만 받으세요.** 표기 없이 자유롭게 사용 가능.
-4. 확신이 서지 않으면 `license_url` 의 라이선스 원문을 확인하세요. (이 도구는 법률 자문이 아님)
+1. **`commercial_use: true` 인 이미지만 사용.**
+2. **`attribution_required: true` 이면** 포스트에 `attribution` 문구를 표기.
+3. 표기가 번거로우면 `--no-attribution` 으로 표기 불필요 이미지만 받기.
+4. 확신이 안 서면 `license_url` 원문 확인. (이 도구는 법률 자문이 아님)
 
 ---
 
-## 🗂️ 블로그 주제별 추천 키워드
+## 🗂️ 블로그 주제별 추천 키워드 (새 다운로드용, 영어)
 
-| 주제 | 추천 영어 키워드 |
-|------|------------------|
-| 정치 | `government building`, `election voting`, `parliament`, `national flag` |
-| 연예 | `concert stage`, `microphone singer`, `movie theater`, `spotlight` |
-| 지원금 | `financial support`, `cash money hand`, `government welfare`, `benefit` |
-| 돈 | `money banknotes`, `coins stack`, `piggy bank savings`, `wallet` |
-| 경제 | `stock market chart`, `financial graph`, `business trading` |
-| 일상 | `morning coffee`, `city commute`, `home living room` |
-| 감정 | `happy smile`, `sad lonely`, `calm meditation`, `stressed worried` |
+| 주제 | 추천 키워드 |
+|------|------------|
+| 정치 | `government policy`, `election voting`, `parliament congress` |
+| 연예 | `concert stage`, `microphone singer`, `awards show` |
+| 지원금 | `welfare benefit`, `financial help hand`, `government grant document` |
+| 돈 | `dollar bills`, `saving money jar`, `atm machine` |
+| 경제 | `stock trading chart`, `global economy`, `inflation price rising` |
+| 일상 | `morning routine`, `city commute`, `cleaning house` |
+| 감정 | `laughing joy`, `crying tears`, `anxiety fear` |
+| 청년 | `generation z`, `young professionals team`, `college students` |
 
-이미 `config.yaml` 의 카테고리로 수백~천 장을 미리 모아 두었으니,
-위 키워드로 `search` 하면 대개 **네트워크 없이 즉시** 결과가 나옵니다.
+이미 40여 개 카테고리로 수천 장을 모아 두었으니, 위 키워드로 `search` 하면 대개
+**네트워크 없이 즉시** 라이브러리에서 결과가 나옵니다.
 
 ---
 
-## 🔎 이미 모아둔 라이브러리를 둘러보려면
+## 🔎 라이브러리 둘러보기
 
 ```bash
-# 사람이 브라우저로 보기
-python -m imagecollector serve            # http://127.0.0.1:8765
-
-# 통계 (카테고리/소스/라이선스별 개수)
-python -m imagecollector stats
+python -m imagecollector serve   # http://127.0.0.1:8765 (라이브 갤러리, 보통 항상 켜져 있음)
+python -m imagecollector stats   # 카테고리/소스/라이선스별 통계
 ```
 
-프로그램에서 직접 DB를 읽고 싶으면 `library.db`(SQLite)의 `images` 테이블을 조회하세요.
-주요 컬럼: `filepath`, `category`, `license`, `commercial_use`, `attribution_required`, `attribution`.
+직접 DB를 읽으려면 `library.db`(SQLite) `images` 테이블을 조회하세요.
+주요 컬럼: `filepath`, `category`, `tags`(한국어), `license`, `commercial_use`,
+`attribution_required`, `attribution`.
 
 ---
 
 ## ⚙️ 참고
 
-- 반드시 저장소 루트(`/Users/1113177/Desktop/github/image`)에서 `.venv` 를 활성화하고 실행하세요.
-- 이미지 원본은 `images/<카테고리>/`, 썸네일은 `thumbnails/<카테고리>/` 에 있습니다.
-- 새 키워드로 받은 이미지는 자동으로 라이브러리에 누적됩니다(중복은 자동 제거).
+- 저장소 루트(`/Users/1113177/Desktop/github/image`)에서 `.venv` 활성화 후 실행.
+- 원본은 `images/<카테고리>/`, 썸네일은 `thumbnails/<카테고리>/`.
+- 새 키워드로 받은 이미지는 라이브러리에 누적됩니다(중복 자동 제거, 태그 자동 한국어).
