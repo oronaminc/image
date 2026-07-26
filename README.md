@@ -37,7 +37,7 @@ python -m imagecollector init
 # 3) 이미지 수집 (config.yaml 의 카테고리·검색어대로)
 python -m imagecollector collect
 
-# 4) 웹 뷰어 실행 → 브라우저에서 http://127.0.0.1:8000
+# 4) 웹 뷰어 실행 → 브라우저에서 http://127.0.0.1:8765
 python -m imagecollector serve
 ```
 
@@ -66,7 +66,7 @@ python -m imagecollector collect --source openverse --category nature --limit 30
 python -m imagecollector collect --query "cyberpunk city" --query "neon street" --category custom
 
 # 웹 뷰어
-python -m imagecollector serve --host 0.0.0.0 --port 8000
+python -m imagecollector serve --host 0.0.0.0 --port 8765
 
 # 통계
 python -m imagecollector stats

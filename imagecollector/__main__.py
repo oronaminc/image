@@ -262,7 +262,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sp = sub.add_parser("serve", help="웹 뷰어 실행")
     sp.add_argument("--host", default="127.0.0.1")
-    sp.add_argument("--port", type=int, default=8000)
+    sp.add_argument("--port", type=int, default=8765)
     sp.set_defaults(func=cmd_serve)
 
     sp = sub.add_parser("stats", help="라이브러리 통계")

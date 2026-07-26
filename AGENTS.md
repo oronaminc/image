@@ -98,7 +98,7 @@ python -m imagecollector search "<키워드>" --limit 3 --no-attribution --json
 
 ```bash
 # 사람이 브라우저로 보기
-python -m imagecollector serve            # http://127.0.0.1:8000
+python -m imagecollector serve            # http://127.0.0.1:8765
 
 # 통계 (카테고리/소스/라이선스별 개수)
 python -m imagecollector stats
