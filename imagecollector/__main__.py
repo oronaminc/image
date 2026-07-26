@@ -172,6 +172,15 @@ def cmd_serve(args) -> None:
     config = load_config(args.config)
     console.print(f"[bold cyan]웹 뷰어 시작[/bold cyan] → http://{args.host}:{args.port}")
     console.print(f"이미지 폴더: {config.images_dir}")
+
+    if args.reload:
+        # 코드를 고쳐도 뷰어를 죽이지 않고 그대로 살려 두기 위한 자동 리로드.
+        # reload 는 임포트 문자열이 필요해서 모듈 수준 app 을 쓴다.
+        console.print("[dim]자동 리로드 켜짐 — 코드를 고치면 알아서 반영됩니다[/dim]")
+        uvicorn.run("imagecollector.web.app:app", host=args.host, port=args.port,
+                    reload=True, reload_dirs=[str(PKG_DIR)], log_level="info")
+        return
+
     # factory 로 config 를 넘기기 위해 환경변수 대신 직접 app 사용
     from .web.app import create_app
     app = create_app(config)
@@ -361,6 +370,8 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("serve", help="웹 뷰어 실행")
     sp.add_argument("--host", default="127.0.0.1")
     sp.add_argument("--port", type=int, default=8765)
+    sp.add_argument("--reload", action="store_true",
+                    help="코드를 고치면 자동 반영 (작업 중 뷰어를 끊지 않으려면 켜기)")
     sp.set_defaults(func=cmd_serve)
 
     sp = sub.add_parser("stats", help="라이브러리 통계")

@@ -140,17 +140,24 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "실패");
 
+      const how = data.via === "wikipedia" ? " (위키백과 번역)"
+                : data.via === "asis" ? " (사전에 없는 낱말 — 그대로 검색)" : "";
+      const used = `검색어: ${data.queries.join(", ")}${how}`;
+
       if (data.added > 0) {
         status.className = "fetch-status ok";
-        status.textContent =
-          `'${data.keyword}' 새 사진 ${data.added}장 추가 · 검색어: ${data.queries.join(", ")} · 잠시 후 이동합니다`;
+        status.textContent = `'${data.keyword}' 새 사진 ${data.added}장 추가 · ${used} · 잠시 후 이동합니다`;
         setTimeout(() => {
           location.href = "/?q=" + encodeURIComponent(data.keyword) + "&order=recent";
-        }, 1200);
+        }, 1400);
+      } else if (data.already > 0) {
+        status.className = "fetch-status ok";
+        status.textContent =
+          `'${data.keyword}' 관련 사진 ${data.already}장은 이미 갖고 있습니다 (새로 받을 것 없음) · ${used}`;
       } else {
         status.className = "fetch-status warn";
         status.textContent =
-          `'${data.keyword}' 로 새로 받을 사진이 없습니다 (이미 다 받았거나 결과 없음) · 검색어: ${data.queries.join(", ")}`;
+          `'${data.keyword}' 에 맞는 사진을 못 찾았습니다 · ${used} · 더 구체적인 낱말로 해보세요 (예: '엔화 지폐')`;
       }
     } catch (e) {
       status.className = "fetch-status warn";

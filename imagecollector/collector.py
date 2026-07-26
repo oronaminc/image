@@ -7,7 +7,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from . import db, dedup, images, korean, licenses, translate
+from . import classify, db, dedup, images, korean, licenses, translate
 from .config import Config
 from .models import ImageResult
 from .sources import get_source
@@ -284,7 +284,11 @@ class Collector:
             setattr(source, "lang_override", plan.lang)
 
         category = category or plan.category
+        # 낱말에 맞는 카테고리를 모를 때는('search') 사진 태그를 보고 알아서 배치한다.
+        # (반도체 → technology, 치과 → medical)
+        auto_category = category == "search"
         collected: list[dict] = []
+        seen = already = 0     # 소스가 준 결과 수 / 그중 이미 갖고 있던 수
         per_query = max(2, -(-limit // len(plan.queries)))  # 검색어별로 고르게
 
         for query in plan.queries:
@@ -295,11 +299,20 @@ class Collector:
                 for result in source.search(query, per_query * 5):
                     if got >= per_query or len(collected) >= limit:
                         break
+                    seen += 1
+                    target = category
+                    if auto_category and result.tags:
+                        ranked = classify.best_categories(classify.tag_set(", ".join(result.tags)))
+                        # 근거가 약하면(1점) 억지로 배치하지 않고 search 에 둔다
+                        if ranked and ranked[0][1] >= 2:
+                            target = ranked[0][0]
                     status, image_id = self._process(
-                        result, category, query,
+                        result, target, query,
                         ignore_recency=True, extra_tags=plan.keyword,
                     )
-                    if status == "ok" and image_id:
+                    if status == "dup":
+                        already += 1
+                    elif status == "ok" and image_id:
                         rec = self.record_json(image_id)
                         if rec:
                             collected.append(rec)
@@ -310,9 +323,12 @@ class Collector:
         return {
             "keyword": plan.keyword,
             "added": len(collected),
+            "seen": seen,
+            "already": already,
             "queries": plan.queries,
-            "category": category,
+            "category": ("자동 분류" if auto_category else category),
             "matched": plan.matched,
+            "via": plan.via,
             "items": collected,
         }
 

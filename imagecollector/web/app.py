@@ -173,9 +173,12 @@ def create_app(config: Config | None = None) -> FastAPI:
             "ok": True,
             "keyword": result["keyword"],
             "added": result["added"],
+            "seen": result["seen"],
+            "already": result["already"],
             "queries": result["queries"],
             "category": result["category"],
             "matched": result["matched"],
+            "via": result["via"],
         })
 
     @app.get("/stats", response_class=HTMLResponse)
