@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.oronaminc.imagecollector.viewer</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/1113177/Desktop/github/image/.venv/bin/python</string>
+        <string>-m</string>
+        <string>imagecollector</string>
+        <string>serve</string>
+        <string>--host</string>
+        <string>127.0.0.1</string>
+        <string>--port</string>
+        <string>8765</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/1113177/Desktop/github/image</string>
+
+    <!-- 로그인 시 자동 시작 -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 죽으면 자동 재시작 (항상 켜짐 유지) -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/1113177/Desktop/github/image/.viewer.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/1113177/Desktop/github/image/.viewer.log</string>
+</dict>
+</plist>

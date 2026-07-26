@@ -36,8 +36,10 @@
   <button type="submit">검색</button>
 </form>
 
-<p class="count">{{ total }}개 이미지
+<p class="count">
+  <span id="total-count">{{ total }}</span>개 이미지
   {% if f.category or f.source or f.license or f.q or f.favorite %}(필터 적용됨){% endif %}
+  <span id="live-dot" class="live-dot" title="라이브: 새 이미지를 자동 감지합니다">● LIVE</span>
 </p>
 
 {% if items %}
@@ -73,4 +75,36 @@
 </div>
 {% endif %}
 
+<div id="live-banner" class="live-banner" onclick="location.reload()">
+  🆕 새 이미지 <span id="live-n">0</span>장 도착 · 클릭해서 보기
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  // 라이브: 현재 필터 기준 총 개수를 주기적으로 확인해, 늘어나면 배너 표시
+  const initial = {{ total }};
+  const params = new URLSearchParams(window.location.search);
+  params.delete("page");
+  const banner = document.getElementById("live-banner");
+  const liveN = document.getElementById("live-n");
+  const onFirstPage = ((parseInt(params.get("page") || "1", 10)) === 1);
+
+  async function poll() {
+    try {
+      const res = await fetch("/api/count?" + params.toString(), { cache: "no-store" });
+      const data = await res.json();
+      const diff = data.count - initial;
+      if (diff > 0) {
+        liveN.textContent = diff;
+        banner.classList.add("show");
+        document.getElementById("total-count").textContent = data.count;
+      }
+    } catch (e) { /* 서버 잠깐 끊겨도 무시 */ }
+  }
+  // 6초마다 확인 (최신순 첫 페이지면 새 이미지가 위에 쌓임)
+  setInterval(poll, 6000);
+})();
+</script>
 {% endblock %}

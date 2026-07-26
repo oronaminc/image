@@ -12,6 +12,9 @@ exports/
 .env
 config.local.yaml
 
+# --- Viewer runtime log ---
+.viewer.log
+
 # --- Python ---
 .venv/
 venv/

@@ -136,6 +136,21 @@ def create_app(config: Config | None = None) -> FastAPI:
         finally:
             c.close()
 
+    @app.get("/api/count")
+    def api_count(category: str = "", source: str = "", license: str = "",
+                  q: str = "", favorite: int = 0):
+        """현재 필터 기준 총 개수 (라이브 갱신 폴링용)."""
+        c = conn()
+        try:
+            n = db.count_images(
+                c, category=category or None, source=source or None,
+                license_code=license or None, favorite=bool(favorite),
+                search=q or None,
+            )
+            return JSONResponse({"count": n})
+        finally:
+            c.close()
+
     @app.get("/stats", response_class=HTMLResponse)
     def stats_page(request: Request):
         c = conn()
