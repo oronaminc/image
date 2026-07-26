@@ -20,6 +20,10 @@ _PRETTY = {
     "pixabay": "Pixabay License",
     "pexels": "Pexels License",
     "unsplash": "Unsplash License",
+    "kogl-type-1": "공공누리 제1유형",
+    "kogl-type-2": "공공누리 제2유형",
+    "kogl-type-3": "공공누리 제3유형",
+    "kogl-type-4": "공공누리 제4유형",
 }
 
 # 퍼블릭 도메인류 (저작자 표기 불필요)
@@ -39,16 +43,22 @@ def parts(code: str) -> set[str]:
 
 
 def is_commercial_ok(code: str | None) -> bool:
-    """NC(비영리) 조항이 없으면 상업적 사용 가능."""
-    p = parts(code or "")
+    """NC(비영리) 조항이 없으면 상업적 사용 가능. 공공누리(KOGL)는 제1·2유형만 허용."""
+    c = normalize(code)
+    if c.startswith("kogl"):
+        return not ("type-3" in c or "type-4" in c)  # 3·4유형은 상업 불가
+    p = parts(c)
     if not p or p == {""}:
         return False
     return "nc" not in p
 
 
 def is_modification_ok(code: str | None) -> bool:
-    """ND(변형금지) 조항이 없으면 수정/변형 가능."""
-    return "nd" not in parts(code or "")
+    """ND(변형금지) 조항이 없으면 수정/변형 가능. KOGL 제2·4유형은 변형 불가."""
+    c = normalize(code)
+    if c.startswith("kogl"):
+        return not ("type-2" in c or "type-4" in c)
+    return "nd" not in parts(c)
 
 
 def is_attribution_required(code: str | None) -> bool:

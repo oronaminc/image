@@ -108,6 +108,16 @@ class Collector:
             self.stats["skipped_filter"] += 1
             return "filter", None
 
+        # 2-c) Pixabay 최신 필터: source_id(=업로드순 ID)가 기준 미만이면 제외 (예: 2024+ 만)
+        min_sid = int(coll.get("min_source_id", 0) or 0)
+        if min_sid and r.source == "pixabay":
+            try:
+                if int(r.source_id) < min_sid:
+                    self.stats["skipped_filter"] += 1
+                    return "filter", None
+            except (ValueError, TypeError):
+                pass
+
         # 3) 확장자 판별 (svg 등 미지원 제외)
         ext = images.guess_ext(r.url, None, r.filetype)
         if not ext:
