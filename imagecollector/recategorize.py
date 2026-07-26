@@ -53,6 +53,8 @@ def run(config: Config, *, apply: bool = False, category: str | None = None,
         if limit:
             sql += f" LIMIT {int(limit)}"
         rows = list(conn.execute(sql, params))
+        # 라이브러리 전체 기준으로 '너무 흔한 태그' 를 먼저 골라낸다
+        generic = classify.build_generic_tags(conn)
 
         summary = {
             "total": len(rows),
@@ -70,7 +72,7 @@ def run(config: Config, *, apply: bool = False, category: str | None = None,
                 summary["no_tags"] += 1
                 continue
 
-            verdict = classify.audit(tags, row["category"])
+            verdict = classify.audit(tags, row["category"], generic)
             if verdict["ok"]:
                 summary["ok"] += 1
                 continue

@@ -297,17 +297,46 @@ def tag_set(source_tags: str | None) -> set[str]:
     return tags
 
 
-def score(tags: set[str], category: str) -> int:
-    """카테고리 어휘와 겹치는 태그 수."""
+# 라이브러리의 몇 %에 붙어 있으면 '너무 흔한 태그' 로 보고 판단에서 뺄지
+GENERIC_RATIO = 0.05
+
+
+def build_generic_tags(conn, ratio: float = GENERIC_RATIO) -> set[str]:
+    """라이브러리 전체에서 너무 흔한 태그를 골라낸다.
+
+    Pixabay 태그는 `nature`(전체의 38%), `beauty`(10%), `fashion`(10%) 처럼
+    아무 사진에나 붙는 말이 많다. 이런 태그를 그대로 쓰면 모든 사진이 nature 로
+    끌려가므로 판단 근거에서 제외한다.
+    """
+    from collections import Counter
+    rows = [r[0] for r in conn.execute(
+        "SELECT source_tags FROM images "
+        "WHERE source_tags IS NOT NULL AND source_tags NOT IN ('', '-', '(삭제됨)')"
+    )]
+    if not rows:
+        return set()
+    counter: Counter = Counter()
+    for raw in rows:
+        counter.update(tag_set(raw))
+    cutoff = len(rows) * ratio
+    return {tag for tag, n in counter.items() if n > cutoff}
+
+
+def score(tags: set[str], category: str, generic: set[str] | None = None) -> int:
+    """카테고리 어휘와 겹치는 태그 수 (흔한 태그는 제외)."""
     vocab = CATEGORY_VOCAB.get(category)
     if not vocab:
         return 0
-    return len(tags & vocab)
+    hits = tags & vocab
+    if generic:
+        hits = hits - generic
+    return len(hits)
 
 
-def best_categories(tags: set[str], top: int = 3) -> list[tuple[str, int]]:
+def best_categories(tags: set[str], top: int = 3,
+                    generic: set[str] | None = None) -> list[tuple[str, int]]:
     """점수가 높은 카테고리 순으로. 점수 0 은 제외."""
-    scored = [(cat, score(tags, cat)) for cat in CATEGORY_VOCAB]
+    scored = [(cat, score(tags, cat, generic)) for cat in CATEGORY_VOCAB]
     scored = [(c, s) for c, s in scored if s > 0]
     scored.sort(key=lambda x: (-x[1], x[0]))
     return scored[:top]
@@ -315,9 +344,11 @@ def best_categories(tags: set[str], top: int = 3) -> list[tuple[str, int]]:
 
 # 현재 카테고리가 이만큼 밀리면 오분류로 본다 (1점 차이는 우열을 가리기 어려움)
 MARGIN = 2
+# 옮길 곳은 최소 이 점수는 되어야 한다 (태그 하나 걸린 것만으로 옮기면 오히려 틀린다)
+MIN_SUGGEST = 2
 
 
-def audit(source_tags: str | None, category: str) -> dict:
+def audit(source_tags: str | None, category: str, generic: set[str] | None = None) -> dict:
     """한 장 판정: 현재 카테고리가 맞는지 / 아니면 어디로 갈지.
 
     - 현재 점수가 0  → 불일치 (카테고리와 겹치는 태그가 하나도 없음)
@@ -325,17 +356,19 @@ def audit(source_tags: str | None, category: str) -> dict:
     - 아무 카테고리도 점수를 못 얻음 → 판정 불가 (태그가 너무 일반적)
     """
     tags = tag_set(source_tags)
-    current = score(tags, category)
-    ranked = best_categories(tags, top=5)
+    current = score(tags, category, generic)
+    ranked = best_categories(tags, top=5, generic=generic)
     best = ranked[0] if ranked else None
     best_score = best[1] if best else 0
 
-    outranked = bool(best and best[0] != category and best_score - current >= MARGIN)
+    movable = bool(best and best[0] != category and best_score >= MIN_SUGGEST)
+    outranked = movable and best_score - current >= MARGIN
     return {
         "current_score": current,
         "ok": current > 0 and not outranked,
-        "suggested": best[0] if (best and best[0] != category) else None,
+        "suggested": best[0] if movable else None,
         "suggested_score": best_score,
         "ranked": ranked,
-        "unclear": not ranked,
+        # 옮길 곳을 못 정하면 '판정 불가' — 사람이 보거나 그대로 둔다
+        "unclear": not ranked or (current == 0 and not movable),
     }
