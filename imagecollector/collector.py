@@ -7,7 +7,7 @@ from pathlib import Path
 
 from rich.console import Console
 
-from . import db, dedup, images, licenses
+from . import db, dedup, images, korean, licenses
 from .config import Config
 from .models import ImageResult
 from .sources import get_source
@@ -215,7 +215,7 @@ class Collector:
             "provider": r.provider,
             "sha256": sha,
             "phash": phash,
-            "tags": ", ".join(r.tags) if r.tags else None,
+            "tags": korean.korean_tags(category, query) or (", ".join(r.tags) if r.tags else None),
             "collected_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         try:

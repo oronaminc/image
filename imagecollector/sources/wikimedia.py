@@ -20,6 +20,18 @@ _LICENSE_KEYS = (
 )
 
 
+def _extract_year(*texts: str | None) -> int | None:
+    """날짜/제목 문자열들에서 첫 4자리 연도(19xx/20xx)를 추출."""
+    for t in texts:
+        if not t:
+            continue
+        clean = re.sub(r"<[^>]+>", " ", t)
+        m = re.search(r"(?:19|20)\d{2}", clean)
+        if m:
+            return int(m.group(0))
+    return None
+
+
 def _norm_license(short_name: str | None) -> str:
     """Wikimedia 의 LicenseShortName(예: 'CC BY 4.0', 'CC0', 'Public domain')을 정규화."""
     s = (short_name or "").strip().lower()
@@ -96,6 +108,13 @@ class WikimediaSource(Source):
             return None  # NC 등 상업적 사용 불가 제외
 
         title = (page.get("title") or "").replace("File:", "")
+
+        # 연도 필터 (예: 2024 이후만). 연도 불명이면 엄격히 제외.
+        min_year = int(self.config.collection.get("min_year", 0) or 0)
+        if min_year:
+            year = _extract_year(mval("DateTimeOriginal"), mval("DateTime"), title)
+            if not year or year < min_year:
+                return None
         creator = mval("Artist")
         if creator:
             creator = re.sub(r"<[^>]+>", "", creator).strip()  # HTML 태그 제거

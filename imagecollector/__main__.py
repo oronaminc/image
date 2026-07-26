@@ -222,6 +222,24 @@ def cmd_prune(args) -> None:
         conn.close()
 
 
+def cmd_retag(args) -> None:
+    """모든 이미지의 태그를 한국어(카테고리+검색어)로 다시 설정."""
+    from . import korean
+    config = load_config(args.config)
+    conn = db.connect(config.db_path)
+    try:
+        rows = conn.execute("SELECT id, category, query FROM images").fetchall()
+        n = 0
+        for r in rows:
+            tags = korean.korean_tags(r["category"], r["query"])
+            conn.execute("UPDATE images SET tags = ? WHERE id = ?", (tags, r["id"]))
+            n += 1
+        conn.commit()
+        console.print(f"[green]{n}장의 태그를 한국어로 변경했습니다.[/green]")
+    finally:
+        conn.close()
+
+
 def cmd_sources(args) -> None:
     config = load_config(args.config)
     t = Table(title="이미지 소스", title_style="bold cyan")
@@ -284,6 +302,9 @@ def build_parser() -> argparse.ArgumentParser:
                     help="source_id 가 이 값 미만인 것 삭제 (Pixabay 오래된 업로드 정리용)")
     sp.add_argument("--dry-run", action="store_true", help="삭제하지 않고 대상 수만 표시")
     sp.set_defaults(func=cmd_prune)
+
+    sp = sub.add_parser("retag", help="모든 이미지 태그를 한국어로 변경")
+    sp.set_defaults(func=cmd_retag)
 
     sp = sub.add_parser("sources", help="사용 가능한 소스 목록")
     sp.set_defaults(func=cmd_sources)

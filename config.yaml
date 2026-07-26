@@ -17,6 +17,7 @@ collection:
   license_type: commercial      # commercial | commercial,modification
   order: latest                 # (Pixabay) latest=최신 업로드순 | popular=인기순
   min_source_id: 9000000        # (Pixabay) 이 업로드ID 이상만 = 약 2024년 이후. 0=제한없음
+  min_year: 2024                # (Wikimedia) 이 연도 이후만. 연도 불명 사진 제외. 0=제한없음
   safe_search: true
   per_category_limit: 40        # 검색어당 수집 개수
   min_width: 600
