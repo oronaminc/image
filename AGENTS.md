@@ -97,8 +97,8 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 | 감정 | `laughing joy`, `crying tears`, `anxiety fear` |
 | 청년 | `generation z`, `young professionals team`, `college students` |
 
-이미 40여 개 카테고리로 수천 장을 모아 두었으니, 위 키워드로 `search` 하면 대개
-**네트워크 없이 즉시** 라이브러리에서 결과가 나옵니다.
+이미 **37개 카테고리로 7천 7백여 장**을 모아 두었으니(정확한 수치는 `stats`), 위 키워드로
+`search` 하면 대개 **네트워크 없이 즉시** 라이브러리에서 결과가 나옵니다.
 
 ---
 
@@ -108,6 +108,8 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 python -m imagecollector serve   # http://127.0.0.1:8765 (라이브 갤러리, 보통 항상 켜져 있음)
 python -m imagecollector stats   # 카테고리/소스/라이선스별 통계
 ```
+
+> 허브(`hub up image`)로 띄운 경우 뷰어는 **8020** 에 있습니다. 자체 기본은 8765.
 
 직접 DB를 읽으려면 `library.db`(SQLite) `images` 테이블을 조회하세요.
 주요 컬럼: `filepath`, `category`, `tags`(한국어), `license`, `commercial_use`,

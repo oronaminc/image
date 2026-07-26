@@ -44,6 +44,9 @@ python -m imagecollector collect
 python -m imagecollector serve
 ```
 
+> **포트 주의.** 이 프로젝트의 기본 포트는 **8765** 지만, 옆의 `hub` 관제탑이 띄울 때는
+> **8020** 을 쓴다 (`hub/registry.json`). `hub up image` 로 켰다면 8020 으로 접속하세요.
+
 > 🤖 **블로그 포스팅 AI(다른 Claude)가 이 도구를 쓴다면** → [`AGENTS.md`](AGENTS.md) 참고.
 > 핵심은 `python -m imagecollector search "<키워드>" --limit 3 --json` 한 줄입니다.
 
@@ -129,6 +132,7 @@ python -m imagecollector sources
 - 갤러리는 **6초마다 새 이미지를 감지**해 "🆕 새 이미지 도착" 배너를 띄웁니다(라이브).
 - 서버를 **항상 켜두는 방법**은 [`deploy/README.md`](deploy/README.md) 참고
   (권장: `nohup bash run_viewer.sh 8765 &` — 죽으면 자동 재시작).
+- 여러 프로젝트를 한꺼번에 관리한다면 허브에서 `hub up image` (포트 8020).
 
 ---
 
