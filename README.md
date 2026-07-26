@@ -55,6 +55,10 @@ python -m imagecollector serve
 ## 🧰 명령어
 
 ```bash
+# 낱말(한국어 OK)로 관련된 새 사진 찾아 받기 — 웹의 '✨ 새 사진 찾기' 와 같은 기능
+python -m imagecollector fetch "지원금"        # → money hand giving, cash envelope …
+python -m imagecollector fetch "엔화" --json   # 사전에 없으면 위키백과로 번역해 검색
+
 # 키워드로 이미지 검색·다운로드 (블로그용 핵심). --json 으로 기계가 읽는 출력
 python -m imagecollector search "coffee cafe" --limit 5
 python -m imagecollector search "money" --limit 5 --no-attribution --json   # 표기 불필요만
@@ -66,8 +70,8 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 python -m imagecollector collect
 python -m imagecollector collect --source pixabay --category nature --limit 30
 
-# 웹 뷰어 (기본 포트 8765)
-python -m imagecollector serve --port 8765
+# 웹 뷰어 (기본 포트 8765). --reload 면 코드를 고쳐도 뷰어가 안 끊긴다
+python -m imagecollector serve --port 8765 --reload
 
 # 통계 / 저작자 표기 내보내기(ATTRIBUTIONS.md)
 python -m imagecollector stats
@@ -83,6 +87,10 @@ python -m imagecollector prune --category politics --dry-run          # 미리�
 
 # 모든 태그를 한국어로 재설정
 python -m imagecollector retag
+
+# 카테고리 재점검 — 원본 태그를 근거로 잘못 분류된 사진을 옮긴다
+python -m imagecollector recategorize --dry-run   # 먼저 미리보기
+python -m imagecollector recategorize             # 실제 이동(.recategorize_log.json 에 기록)
 
 # 소스/키 상태 확인
 python -m imagecollector sources

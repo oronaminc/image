@@ -5,23 +5,32 @@ classify.audit() 판정에 따라 파일을 옮기고 DB(카테고리·경로·�
 """
 from __future__ import annotations
 
+import json
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 from . import classify, db, korean
 from .config import Config
 
+LOG_NAME = ".recategorize_log.json"
+
 
 def _retag(old_tags: str | None, old_cat: str, new_cat: str, query: str | None) -> str:
-    """카테고리 태그만 새 카테고리로 바꾸고, 사용자가 붙인 낱말 태그는 남긴다."""
+    """카테고리 태그를 새 카테고리로 바꾼다.
+
+    옮긴다는 것은 **원래 검색어가 이 사진에 맞지 않았다는 뜻**이므로
+    검색어에서 온 한국어 태그(예: '국회')는 버린다. 사용자가 직접 친 낱말
+    태그는 남긴다.
+    """
     generated_before = {t.strip() for t in korean.korean_tags(old_cat, query).split(",") if t.strip()}
     kept = [t.strip() for t in (old_tags or "").split(",")
             if t.strip() and t.strip() not in generated_before]
-    new_parts = [t.strip() for t in korean.korean_tags(new_cat, query).split(",") if t.strip()]
+    new_parts = [korean.category_ko(new_cat)]
     for tag in kept:
         if tag not in new_parts:
             new_parts.append(tag)
-    return ", ".join(new_parts)
+    return ", ".join(p for p in new_parts if p)
 
 
 def _move(src: Path, dest: Path) -> bool:
@@ -64,7 +73,9 @@ def run(config: Config, *, apply: bool = False, category: str | None = None,
             "no_tags": 0,
             "moves": Counter(),      # (from, to) -> 개수
             "unclear_by_cat": Counter(),
+            "log_path": None,
         }
+        move_log: list[dict] = []    # 되돌릴 수 있도록 이동 내역을 남긴다
 
         for row in rows:
             tags = row["source_tags"]
@@ -110,9 +121,35 @@ def run(config: Config, *, apply: bool = False, category: str | None = None,
                     row["id"],
                 ),
             )
+            move_log.append({
+                "id": row["id"],
+                "from_category": row["category"],
+                "to_category": new_cat,
+                "from_filepath": row["filepath"],
+                "to_filepath": str(new_rel) if moved else row["filepath"],
+                "from_thumbnail": row["thumbnail_path"],
+                "to_thumbnail": str(new_thumb_rel) if new_thumb_rel else row["thumbnail_path"],
+                "from_tags": row["tags"],
+            })
 
         if apply:
             conn.commit()
+            if move_log:
+                # 실행할 때마다 덮어쓰지 않고 쌓는다 (되돌릴 때 이력이 필요)
+                path = config.base_dir / LOG_NAME
+                history: list = []
+                if path.exists():
+                    try:
+                        loaded = json.loads(path.read_text(encoding="utf-8"))
+                        history = loaded if isinstance(loaded, list) else [loaded]
+                    except (OSError, ValueError):
+                        history = []
+                history.append({
+                    "at": datetime.now().isoformat(timespec="seconds"),
+                    "moves": move_log,
+                })
+                path.write_text(json.dumps(history, ensure_ascii=False, indent=1), encoding="utf-8")
+                summary["log_path"] = str(path)
         return summary
     finally:
         conn.close()

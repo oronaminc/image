@@ -7,6 +7,8 @@ library.db-wal
 library.db-shm
 ATTRIBUTIONS.md
 exports/
+.recategorize_log.json
+.translate_cache.json
 
 # --- Secrets / local config ---
 .env

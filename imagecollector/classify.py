@@ -106,6 +106,27 @@ CATEGORY_VOCAB: dict[str, set[str]] = {
         "wave", "waves", "beach", "sky", "cloud", "clouds", "sunset", "sunrise",
         "desert", "dune", "aurora", "star", "stars", "flower", "flowers", "plant",
         "grass", "wildlife", "animal", "bird", "scenery", "natural", "outdoor",
+        # 야생 동식물 이름 — `animal`·`bird` 같은 말은 너무 흔해서 판단에서 빠지므로
+        # 종 이름을 직접 넣어야 야생동물 사진이 제 카테고리를 찾는다
+        "frog", "toad", "amphibian", "reptile", "lizard", "snake", "turtle", "tortoise",
+        "swan", "duck", "goose", "heron", "owl", "eagle", "hawk", "falcon", "sparrow",
+        "robin", "seagull", "gull", "pigeon", "dove", "crow", "woodpecker", "songbird",
+        "deer", "fox", "wolf", "bear", "squirrel", "rabbit", "hare", "hedgehog",
+        "mouse", "badger", "otter", "seal", "dolphin", "whale", "elephant", "lion",
+        "tiger", "monkey", "zebra", "giraffe", "insect", "bee", "wasp", "butterfly",
+        "moth", "dragonfly", "beetle", "ant", "spider", "snail", "caterpillar",
+        "moss", "fern", "mushroom", "leaf", "leaves", "petal", "petals", "blossom",
+        "bloom", "rose", "tulip", "orchid", "lily", "daisy", "sunflower", "lavender",
+        "cactus", "palm", "pine", "oak", "maple", "branch", "meadow", "valley",
+        "cliff", "rock", "stone", "waterbird", "wildflower", "pond", "creek",
+        "horizon", "fauna", "flora",
+        # 동물의 몸·서식지 단어 (종 이름을 다 넣을 수는 없어서 이쪽으로 보완)
+        "plumage", "beak", "avian", "feather", "feathers", "wing", "wings", "nest",
+        "fur", "paw", "claw", "tail", "whiskers", "antler", "horn", "hoof", "mane",
+        "savanna", "jungle", "safari", "habitat", "herd", "flock", "swarm", "perch",
+        "grazing", "migration", "ornithology", "birdwatching", "mammal", "rodent",
+        "predator", "prey", "aquatic", "marine", "botanical", "foliage", "pollen",
+        "pollination", "nectar", "seed", "roots", "trunk", "bark",
     },
     "education": {
         "education", "school", "classroom", "class", "student", "students", "study",

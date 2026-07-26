@@ -97,7 +97,7 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 | 감정 | `laughing joy`, `crying tears`, `anxiety fear` |
 | 청년 | `generation z`, `young professionals team`, `college students` |
 
-이미 **37개 카테고리로 7천 7백여 장**을 모아 두었으니(정확한 수치는 `stats`), 위 키워드로
+이미 **37개 카테고리로 7천 8백여 장**을 모아 두었으니(정확한 수치는 `stats`), 위 키워드로
 `search` 하면 대개 **네트워크 없이 즉시** 라이브러리에서 결과가 나옵니다.
 
 ---
