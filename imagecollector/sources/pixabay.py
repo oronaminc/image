@@ -31,6 +31,9 @@ class PixabaySource(Source):
         per_page = min(max(limit, 20), 200)
         page = 1
         yielded = 0
+        # 낱말 검색(관련도 우선)에서는 collector 가 order/lang 을 덮어쓴다
+        order = getattr(self, "order_override", None) or self.config.collection.get("order", "popular")
+        lang = getattr(self, "lang_override", None)
         while yielded < limit and page <= 50:
             params = {
                 "key": key,
@@ -40,8 +43,10 @@ class PixabaySource(Source):
                 "per_page": per_page,
                 "page": page,
                 # popular(인기순, 기본) | latest(최신 업로드순)
-                "order": self.config.collection.get("order", "popular"),
+                "order": order,
             }
+            if lang:
+                params["lang"] = lang
             try:
                 resp = self._get(API, params=params)
             except Exception:

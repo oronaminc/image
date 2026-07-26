@@ -7,12 +7,28 @@ from pathlib import Path
 
 from rich.console import Console
 
-from . import db, dedup, images, korean, licenses
+from . import db, dedup, images, korean, licenses, translate
 from .config import Config
 from .models import ImageResult
 from .sources import get_source
 
 console = Console()
+
+
+def _merge_tags(korean_tags: str | None, extra: str | None,
+                source_tags: str | None) -> str | None:
+    """한국어 태그 + 사용자가 친 낱말을 합친다.
+
+    둘 다 없을 때만 소스의 영어 태그로 대체한다(영어 태그는 부정확해서 후순위).
+    """
+    merged: list[str] = []
+    for part in (korean_tags, extra):
+        for tag in (t.strip() for t in (part or "").split(",")):
+            if tag and tag not in merged:
+                merged.append(tag)
+    if merged:
+        return ", ".join(merged)
+    return source_tags or None
 
 
 class Collector:
@@ -89,7 +105,8 @@ class Collector:
             console.print("  [yellow](수집된 이미지 없음)[/yellow]")
 
     def _process(self, r: ImageResult, category: str, query: str,
-                 attribution_free: bool = False) -> tuple[str, int | None]:
+                 attribution_free: bool = False, ignore_recency: bool = False,
+                 extra_tags: str | None = None) -> tuple[str, int | None]:
         coll = self.config.collection
 
         # 1) 이미 있는 항목(같은 소스+id) 건너뜀
@@ -109,7 +126,8 @@ class Collector:
             return "filter", None
 
         # 2-c) Pixabay 최신 필터: source_id(=업로드순 ID)가 기준 미만이면 제외 (예: 2024+ 만)
-        min_sid = int(coll.get("min_source_id", 0) or 0)
+        #      낱말 검색(fetch_new)은 '최신'보다 '관련도'가 중요하므로 이 필터를 끈다.
+        min_sid = 0 if ignore_recency else int(coll.get("min_source_id", 0) or 0)
         if min_sid and r.source == "pixabay":
             try:
                 if int(r.source_id) < min_sid:
@@ -215,7 +233,8 @@ class Collector:
             "provider": r.provider,
             "sha256": sha,
             "phash": phash,
-            "tags": korean.korean_tags(category, query) or (", ".join(r.tags) if r.tags else None),
+            "tags": _merge_tags(korean.korean_tags(category, query), extra_tags,
+                                ", ".join(r.tags) if r.tags else None),
             "collected_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         try:
@@ -234,6 +253,66 @@ class Collector:
             f"\n[bold green]완료[/bold green] · 신규 {s['downloaded']}장 · "
             f"중복 스킵 {s['skipped_dup']} · 필터 제외 {s['skipped_filter']} · 오류 {s['errors']}"
         )
+
+    # --- 낱말로 새 사진 찾기 (웹 뷰어 '새 사진 찾기' 버튼) ---
+    def fetch_new(self, keyword: str, limit: int = 12, source_name: str | None = None,
+                  category: str | None = None) -> dict:
+        """한국어/영어 낱말을 받아 **관련도 높은 새 사진**을 내려받는다.
+
+        수집(collect)과 다른 점:
+          - 한국어 낱말을 시각적인 영어 검색어 여러 개로 번역 (translate.py)
+          - 최신순이 아니라 **인기순**(관련도가 훨씬 좋다)
+          - '2024년 이후' 연식 필터를 끈다 (관련도 우선)
+          - 사용자가 친 낱말을 태그로 붙여, 다음부터는 로컬 검색으로 바로 나온다
+        """
+        plan = translate.to_queries(keyword, self.config)
+        if not plan.queries:
+            return {"keyword": keyword, "added": 0, "queries": [], "category": "",
+                    "matched": False, "items": []}
+
+        source_name = source_name or self.config.collection.get("default_source", "pixabay")
+        source = get_source(source_name, self.config)
+        ok, note = source.available()
+        if not ok:
+            raise RuntimeError(f"소스 '{source_name}' 사용 불가: {note}")
+
+        # 관련도 우선 옵션 (pixabay 가 읽는다)
+        setattr(source, "order_override", "popular")
+        if plan.lang:
+            setattr(source, "lang_override", plan.lang)
+
+        category = category or plan.category
+        collected: list[dict] = []
+        per_query = max(2, -(-limit // len(plan.queries)))  # 검색어별로 고르게
+
+        for query in plan.queries:
+            if len(collected) >= limit:
+                break
+            got = 0
+            try:
+                for result in source.search(query, per_query * 5):
+                    if got >= per_query or len(collected) >= limit:
+                        break
+                    status, image_id = self._process(
+                        result, category, query,
+                        ignore_recency=True, extra_tags=plan.keyword,
+                    )
+                    if status == "ok" and image_id:
+                        rec = self.record_json(image_id)
+                        if rec:
+                            collected.append(rec)
+                            got += 1
+            except Exception as exc:
+                console.print(f"[yellow]'{query}' 검색 중 경고:[/yellow] {exc}")
+
+        return {
+            "keyword": plan.keyword,
+            "added": len(collected),
+            "queries": plan.queries,
+            "category": category,
+            "matched": plan.matched,
+            "items": collected,
+        }
 
     # --- 키워드 검색 & 다운로드 (다른 Claude/자동화용) ---
     def search(self, keyword: str, limit: int = 5, category: str | None = None,

@@ -34,7 +34,13 @@
            onchange="this.form.submit()"> ⭐ 즐겨찾기
   </label>
   <button type="submit">검색</button>
+  <button type="button" id="fetch-btn" class="fetch-btn"
+          title="입력한 낱말로 인터넷에서 새 사진을 찾아 라이브러리에 추가합니다">
+    ✨ 새 사진 찾기
+  </button>
 </form>
+
+<p id="fetch-status" class="fetch-status"></p>
 
 <p class="count">
   <span id="total-count">{{ total }}</span>개 이미지
@@ -105,6 +111,57 @@
   }
   // 6초마다 확인 (최신순 첫 페이지면 새 이미지가 위에 쌓임)
   setInterval(poll, 6000);
+})();
+
+(function () {
+  // ✨ 새 사진 찾기: 입력한 낱말로 인터넷에서 관련 사진을 받아온다
+  const btn = document.getElementById("fetch-btn");
+  const status = document.getElementById("fetch-status");
+  const input = document.querySelector('input[name="q"]');
+  if (!btn || !input) return;
+
+  async function fetchNew() {
+    const keyword = input.value.trim();
+    if (!keyword) {
+      status.className = "fetch-status warn";
+      status.textContent = "먼저 찾고 싶은 낱말을 입력하세요 (예: 지원금, 청년, 전기차)";
+      input.focus();
+      return;
+    }
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = "⏳ 찾는 중…";
+    status.className = "fetch-status busy";
+    status.textContent = `'${keyword}' 관련 사진을 인터넷에서 찾는 중… (10~30초)`;
+
+    try {
+      const body = new URLSearchParams({ keyword: keyword, limit: "12" });
+      const res = await fetch("/api/fetch", { method: "POST", body: body });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "실패");
+
+      if (data.added > 0) {
+        status.className = "fetch-status ok";
+        status.textContent =
+          `'${data.keyword}' 새 사진 ${data.added}장 추가 · 검색어: ${data.queries.join(", ")} · 잠시 후 이동합니다`;
+        setTimeout(() => {
+          location.href = "/?q=" + encodeURIComponent(data.keyword) + "&order=recent";
+        }, 1200);
+      } else {
+        status.className = "fetch-status warn";
+        status.textContent =
+          `'${data.keyword}' 로 새로 받을 사진이 없습니다 (이미 다 받았거나 결과 없음) · 검색어: ${data.queries.join(", ")}`;
+      }
+    } catch (e) {
+      status.className = "fetch-status warn";
+      status.textContent = "새 사진 찾기 실패: " + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = original;
+    }
+  }
+
+  btn.addEventListener("click", fetchNew);
 })();
 </script>
 {% endblock %}

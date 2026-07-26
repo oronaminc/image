@@ -101,6 +101,40 @@ def cmd_search(args) -> None:
             console.print(f"      표기: {r['attribution']}")
 
 
+def cmd_fetch(args) -> None:
+    """낱말로 관련된 새 사진을 찾아 받는다 (웹 뷰어의 '✨ 새 사진 찾기' 와 동일).
+
+    '지원금' 처럼 스톡 사이트에 없는 개념은 눈에 보이는 영어 검색어로 바꿔 찾는다.
+    """
+    import json
+    from .collector import Collector
+    config = load_config(args.config)
+    collector = Collector(config)
+    try:
+        result = collector.fetch_new(
+            args.keyword, limit=args.limit,
+            source_name=args.source, category=args.category,
+        )
+    finally:
+        collector.close()
+
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    hint = "" if result["matched"] else " [dim](사전에 없는 낱말 — 그대로 검색)[/dim]"
+    console.print(f"\n[bold]'{result['keyword']}'[/bold] → 검색어: "
+                  f"[cyan]{', '.join(result['queries'])}[/cyan]{hint}")
+    if not result["added"]:
+        console.print("[yellow]새로 받은 사진이 없습니다.[/yellow] "
+                      "(이미 다 받았거나 결과가 없을 수 있어요)")
+        return
+    console.print(f"[bold green]새 사진 {result['added']}장[/bold green] "
+                  f"· 카테고리 [bold]{result['category']}[/bold]")
+    for r in result["items"]:
+        console.print(f"  [green]✓[/green] {r['path']}  [dim]({r['width']}×{r['height']})[/dim]")
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     config = load_config(args.config)
@@ -277,6 +311,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="저작자 표기 불필요(CC0/PDM 등) 이미지만")
     sp.add_argument("--json", action="store_true", help="결과를 JSON 으로 출력")
     sp.set_defaults(func=cmd_search)
+
+    sp = sub.add_parser("fetch", help="낱말(한국어 OK)로 관련된 새 사진 찾아 받기")
+    sp.add_argument("keyword", help="낱말 (예: 지원금, 청년, 전기차)")
+    sp.add_argument("--limit", type=int, default=12, help="받을 이미지 수 (기본 12)")
+    sp.add_argument("--category", help="저장 카테고리 (기본: 낱말에 맞는 카테고리 자동)")
+    sp.add_argument("--source", choices=available_source_names(), help="소스 (기본: config)")
+    sp.add_argument("--json", action="store_true", help="결과를 JSON 으로 출력")
+    sp.set_defaults(func=cmd_fetch)
 
     sp = sub.add_parser("serve", help="웹 뷰어 실행")
     sp.add_argument("--host", default="127.0.0.1")

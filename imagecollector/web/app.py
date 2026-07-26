@@ -151,6 +151,33 @@ def create_app(config: Config | None = None) -> FastAPI:
         finally:
             c.close()
 
+    @app.post("/api/fetch")
+    def api_fetch(keyword: str = Form(...), limit: int = Form(12)):
+        """낱말(한국어 OK) 로 관련된 **새 사진**을 인터넷에서 찾아 라이브러리에 추가.
+
+        '지원금' 처럼 스톡 사이트에 없는 추상 개념은 translate.py 가 눈에 보이는
+        영어 검색어들로 바꿔 준다.
+        """
+        from ..collector import Collector  # 무거운 임포트 지연
+        word = (keyword or "").strip()
+        if not word:
+            return JSONResponse({"ok": False, "error": "낱말을 입력하세요."}, status_code=400)
+        collector = Collector(config)
+        try:
+            result = collector.fetch_new(word, limit=max(1, min(int(limit or 12), 50)))
+        except RuntimeError as exc:
+            return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
+        finally:
+            collector.close()
+        return JSONResponse({
+            "ok": True,
+            "keyword": result["keyword"],
+            "added": result["added"],
+            "queries": result["queries"],
+            "category": result["category"],
+            "matched": result["matched"],
+        })
+
     @app.get("/stats", response_class=HTMLResponse)
     def stats_page(request: Request):
         c = conn()
