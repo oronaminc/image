@@ -235,6 +235,8 @@ class Collector:
             "phash": phash,
             "tags": _merge_tags(korean.korean_tags(category, query), extra_tags,
                                 ", ".join(r.tags) if r.tags else None),
+            # 소스가 준 원본(영어) 태그 — 카테고리 검수/재분류의 근거로 남긴다
+            "source_tags": ", ".join(r.tags) if r.tags else None,
             "collected_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         }
         try:

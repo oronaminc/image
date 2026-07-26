@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS images (
     sha256               TEXT,
     phash                TEXT,
     tags                 TEXT,
+    source_tags          TEXT,
     favorite             INTEGER DEFAULT 0,
     rating               INTEGER DEFAULT 0,
     collected_at         TEXT,
@@ -51,7 +52,7 @@ INSERT_FIELDS = [
     "thumbnail_path", "url", "foreign_landing_url", "width", "height", "filesize",
     "format", "license", "license_version", "license_url", "commercial_use",
     "modification", "attribution_required", "creator", "creator_url", "attribution",
-    "provider", "sha256", "phash", "tags", "collected_at",
+    "provider", "sha256", "phash", "tags", "source_tags", "collected_at",
 ]
 
 
@@ -67,9 +68,18 @@ def init_db(db_path: str | Path) -> None:
     conn = connect(db_path)
     try:
         conn.executescript(SCHEMA)
+        _migrate(conn)
         conn.commit()
     finally:
         conn.close()
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """기존 DB에 나중에 생긴 컬럼을 채워 넣는다(있으면 그냥 지나감)."""
+    have = {row["name"] for row in conn.execute("PRAGMA table_info(images)")}
+    for column, ddl in (("source_tags", "TEXT"),):
+        if column not in have:
+            conn.execute(f"ALTER TABLE images ADD COLUMN {column} {ddl}")
 
 
 # --- 존재 확인 (중복 방지) ---
@@ -162,9 +172,10 @@ def query_images(
     if commercial_only:
         where.append("commercial_use = 1")
     if search:
-        where.append("(title LIKE ? OR tags LIKE ? OR creator LIKE ? OR query LIKE ?)")
+        where.append("(title LIKE ? OR tags LIKE ? OR creator LIKE ? OR query LIKE ? "
+                     "OR source_tags LIKE ?)")
         like = f"%{search}%"
-        params.extend([like, like, like, like])
+        params.extend([like] * 5)
 
     clause = ("WHERE " + " AND ".join(where)) if where else ""
     order_sql = {
@@ -195,9 +206,10 @@ def count_images(conn: sqlite3.Connection, **filters) -> int:
     if filters.get("commercial_only"):
         where.append("commercial_use = 1")
     if filters.get("search"):
-        where.append("(title LIKE ? OR tags LIKE ? OR creator LIKE ? OR query LIKE ?)")
+        where.append("(title LIKE ? OR tags LIKE ? OR creator LIKE ? OR query LIKE ? "
+                     "OR source_tags LIKE ?)")
         like = f"%{filters['search']}%"
-        params.extend([like, like, like, like])
+        params.extend([like] * 5)
     clause = ("WHERE " + " AND ".join(where)) if where else ""
     row = conn.execute(f"SELECT COUNT(*) AS n FROM images {clause}", params).fetchone()
     return row["n"] if row else 0

@@ -135,6 +135,38 @@ def cmd_fetch(args) -> None:
         console.print(f"  [green]✓[/green] {r['path']}  [dim]({r['width']}×{r['height']})[/dim]")
 
 
+def cmd_recategorize(args) -> None:
+    """원본 태그를 근거로 카테고리를 다시 점검·이동한다."""
+    from . import recategorize
+    config = load_config(args.config)
+    apply = not args.dry_run
+    s = recategorize.run(config, apply=apply, category=args.category, limit=args.limit)
+
+    head = "[bold]카테고리 점검[/bold]" + ("" if apply else " [yellow](미리보기 — 바꾸지 않음)[/yellow]")
+    console.print(f"\n{head}  대상 {s['total']}장")
+    console.print(f"  [green]맞음[/green] {s['ok']}  ·  "
+                  f"[cyan]{'이동함' if apply else '이동 대상'}[/cyan] {s['moved']}  ·  "
+                  f"[yellow]판정 불가[/yellow] {s['unclear']}  ·  "
+                  f"[dim]태그 없음[/dim] {s['no_tags']}")
+
+    if s["moves"]:
+        table = Table(title="이동 내역 (상위 25)")
+        table.add_column("현재")
+        table.add_column("→ 이동")
+        table.add_column("장수", justify="right")
+        for (src, dst), n in s["moves"].most_common(25):
+            table.add_row(src, dst, str(n))
+        console.print(table)
+
+    if s["unclear_by_cat"]:
+        console.print("\n[yellow]판정 불가[/yellow] (태그가 일반적이라 어느 카테고리에도 안 걸림) 상위:")
+        for cat, n in s["unclear_by_cat"].most_common(10):
+            console.print(f"  {cat}: {n}장")
+
+    if not apply:
+        console.print("\n실제로 옮기려면 [bold]--dry-run 없이[/bold] 다시 실행하세요.")
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     config = load_config(args.config)
@@ -319,6 +351,12 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--source", choices=available_source_names(), help="소스 (기본: config)")
     sp.add_argument("--json", action="store_true", help="결과를 JSON 으로 출력")
     sp.set_defaults(func=cmd_fetch)
+
+    sp = sub.add_parser("recategorize", help="원본 태그로 카테고리 재점검·이동")
+    sp.add_argument("--dry-run", action="store_true", help="바꾸지 않고 결과만 보기")
+    sp.add_argument("--category", help="특정 카테고리만 점검")
+    sp.add_argument("--limit", type=int, help="앞에서 N장만 점검")
+    sp.set_defaults(func=cmd_recategorize)
 
     sp = sub.add_parser("serve", help="웹 뷰어 실행")
     sp.add_argument("--host", default="127.0.0.1")
