@@ -1,6 +1,6 @@
 # =====================================================================
 #  Image Collector  ·  설정 파일 (블로그 포스팅용, 확장판)
-#  - 36개 카테고리 × 검색어로 상업적 사용 가능한 무료 이미지를 모읍니다.
+#  - 37개 카테고리 × 검색어 12개(총 444개)로 상업적 사용 가능한 무료 이미지를 모읍니다.
 #  - 무료 소스는 영어 색인이 풍부하므로 검색어는 영어로 둡니다.
 #    (카테고리 이름 옆 주석이 한국어 블로그 주제입니다.)
 #  - 요청 간격은 소스별로 자동 최적화됩니다(Openverse 20/분, Pixabay 100/분 등).
@@ -34,6 +34,12 @@ categories:
     - election campaign
     - ballot box vote
     - diplomacy meeting
+    - parliament assembly hall
+    - press conference podium
+    - protest rally crowd
+    - national flag waving
+    - public hearing
+    - signing agreement officials
   entertainment:       # 연예
     - tv studio
     - film production
@@ -41,6 +47,12 @@ categories:
     - dance performance
     - live band concert
     - stage spotlight
+    - movie theater audience
+    - microphone singer
+    - backstage dressing room
+    - red carpet event
+    - camera crew filming
+    - music festival crowd
   subsidy:             # 지원금
     - welfare benefit
     - unemployment support
@@ -48,6 +60,12 @@ categories:
     - social security card
     - financial help hand
     - government grant document
+    - application form desk
+    - housing support key
+    - medical bill support
+    - donation charity box
+    - voucher coupon
+    - counseling office desk
   money:               # 돈
     - dollar bills
     - korean won money
@@ -55,6 +73,12 @@ categories:
     - atm machine
     - tax calculation
     - budget planning
+    - coins stack
+    - wallet cash
+    - credit card payment
+    - piggy bank saving
+    - bank counter
+    - salary envelope
   economy:             # 경제
     - inflation price rising
     - global economy
@@ -62,6 +86,12 @@ categories:
     - factory production
     - economic growth chart
     - stock market crash
+    - shipping container port
+    - oil price gas station
+    - consumer price shopping cart
+    - interest rate concept
+    - business district street
+    - market vendor stall
   daily-life:          # 일상
     - morning routine
     - doing laundry
@@ -69,6 +99,12 @@ categories:
     - scrolling smartphone
     - taking notes
     - cleaning house
+    - making coffee morning
+    - grocery shopping bag
+    - commuting bus
+    - washing dishes
+    - reading book sofa
+    - waking up alarm
   emotion:             # 감정
     - crying tears
     - laughing joy
@@ -76,6 +112,12 @@ categories:
     - love affection
     - tired exhausted
     - surprise shock face
+    - lonely person window
+    - stress headache
+    - smiling happy woman
+    - angry frustrated man
+    - relief calm breathing
+    - hope sunrise silhouette
   health:              # 건강
     - blood pressure check
     - healthy lifestyle
@@ -83,6 +125,12 @@ categories:
     - dental care
     - mental health
     - medical checkup
+    - running exercise outdoor
+    - yoga stretching
+    - healthy food plate
+    - sleep rest bed
+    - drinking water hydration
+    - weight scale diet
   work:                # 직장/업무
     - business meeting
     - remote work home
@@ -90,6 +138,12 @@ categories:
     - team brainstorming
     - office desk
     - video conference call
+    - laptop working late
+    - presentation whiteboard
+    - coworkers coffee break
+    - signing document office
+    - call center headset
+    - factory worker safety
   technology:          # 기술/IT
     - smartphone app
     - cloud computing
@@ -97,6 +151,12 @@ categories:
     - virtual reality headset
     - software developer coding
     - smart home device
+    - artificial intelligence robot
+    - data center server
+    - electric charging tech
+    - drone flying
+    - wearable smartwatch
+    - circuit board chip
   travel:              # 여행
     - passport airport
     - backpacker traveler
@@ -104,6 +164,12 @@ categories:
     - city sightseeing
     - train journey
     - packing suitcase
+    - mountain hiking trail
+    - beach vacation umbrella
+    - road trip car window
+    - hotel room bed
+    - local market travel
+    - airplane window view
   food:                # 음식
     - korean bbq
     - street food
@@ -111,6 +177,12 @@ categories:
     - bakery bread
     - sushi japanese food
     - vegetarian salad
+    - kimchi korean side dish
+    - noodle soup bowl
+    - coffee dessert cafe
+    - fresh fruit basket
+    - barbecue grill meat
+    - lunch box meal
   nature:              # 자연
     - sunset sky
     - green forest path
@@ -118,6 +190,12 @@ categories:
     - desert sand dune
     - northern lights aurora
     - wild animals
+    - mountain landscape
+    - ocean waves rock
+    - waterfall jungle
+    - flower field bloom
+    - snow mountain peak
+    - starry night sky
   education:           # 교육
     - online class laptop
     - exam test paper
@@ -125,6 +203,12 @@ categories:
     - teacher lecture
     - children learning
     - science project
+    - library books study
+    - kindergarten children
+    - school classroom desk
+    - studying notes highlighter
+    - school bus
+    - graduation cap diploma
   family:              # 가족
     - family picnic
     - siblings playing
@@ -132,6 +216,12 @@ categories:
     - family vacation
     - parenting baby
     - family dinner table
+    - mother and child
+    - father and son
+    - family walking park
+    - baby sleeping
+    - home cooking together
+    - family portrait smiling
   sports:              # 스포츠
     - soccer match
     - basketball game
@@ -139,6 +229,12 @@ categories:
     - golf course
     - baseball
     - martial arts
+    - running marathon race
+    - gym workout weights
+    - swimming pool athlete
+    - cycling road bike
+    - badminton racket
+    - stadium crowd cheering
   season-weather:      # 계절/날씨
     - cherry blossom spring
     - summer beach sun
@@ -146,6 +242,12 @@ categories:
     - winter snow
     - rainy day umbrella
     - foggy morning
+    - typhoon storm cloud
+    - heat wave sun
+    - yellow dust fine dust city
+    - first snow street
+    - spring flowers garden
+    - monsoon rain window
   business:            # 비즈니스
     - startup team
     - corporate building
@@ -153,6 +255,12 @@ categories:
     - entrepreneur working
     - business negotiation
     - office teamwork
+    - handshake deal
+    - conference presentation
+    - small business owner shop
+    - financial report desk
+    - logistics warehouse
+    - coworking space
   finance-invest:      # 투자/금융
     - stock trading chart
     - cryptocurrency bitcoin
@@ -160,6 +268,12 @@ categories:
     - gold investment
     - pension retirement fund
     - financial advisor
+    - stock market screen
+    - bank building
+    - insurance contract
+    - savings account book
+    - investment portfolio laptop
+    - loan mortgage house
   shopping:            # 쇼핑
     - online shopping
     - shopping mall
@@ -167,6 +281,12 @@ categories:
     - discount sale tag
     - gift box present
     - delivery courier package
+    - supermarket aisle
+    - clothing store rack
+    - shopping cart cart
+    - payment kiosk
+    - black friday sale
+    - unboxing package
   beauty:              # 뷰티
     - skincare routine
     - makeup cosmetics
@@ -174,6 +294,12 @@ categories:
     - spa treatment
     - perfume bottle
     - manicure nails
+    - face mask sheet
+    - lipstick makeup close up
+    - cosmetic shelf store
+    - barber shop haircut
+    - healthy skin portrait
+    - beauty tools brush
   fashion:             # 패션
     - fashion outfit
     - runway fashion model
@@ -181,6 +307,12 @@ categories:
     - handbag purse
     - jewelry accessories
     - streetwear style
+    - winter coat outfit
+    - summer dress woman
+    - watch accessory wrist
+    - sunglasses portrait
+    - shopping fashion boutique
+    - denim jeans style
   interior:            # 인테리어
     - modern living room
     - kitchen interior
@@ -188,6 +320,12 @@ categories:
     - home office setup
     - minimalist decor
     - scandinavian interior
+    - apartment living space
+    - bathroom interior
+    - dining table chairs
+    - balcony plants
+    - storage organizing closet
+    - lighting lamp interior
   car:                 # 자동차
     - electric car
     - luxury car
@@ -195,6 +333,12 @@ categories:
     - highway driving
     - car charging station
     - vintage classic car
+    - car repair garage
+    - parking lot cars
+    - car key hand
+    - traffic road cars
+    - suv family car
+    - motorcycle rider
   pet:                 # 반려동물
     - cute dog
     - kitten cat
@@ -202,6 +346,12 @@ categories:
     - dog walking
     - aquarium fish
     - pet food bowl
+    - dog puppy playing
+    - cat sleeping window
+    - pet hospital vet
+    - hamster small pet
+    - bird pet cage
+    - dog and owner
   wedding:             # 결혼
     - wedding ceremony
     - bride bouquet
@@ -209,6 +359,12 @@ categories:
     - engagement couple
     - wedding venue decoration
     - groom suit
+    - wedding dress bride
+    - wedding table setting
+    - wedding invitation card
+    - wedding photo couple
+    - honeymoon travel couple
+    - wedding guests celebration
   culture-art:         # 문화/예술
     - art museum gallery
     - oil painting
@@ -216,6 +372,12 @@ categories:
     - street art graffiti
     - ballet dance
     - orchestra concert
+    - traditional korean hanok
+    - book reading culture
+    - theater stage play
+    - photography exhibition
+    - pottery craft hands
+    - calligraphy writing
   science:             # 과학
     - laboratory research
     - microscope
@@ -223,6 +385,12 @@ categories:
     - chemistry experiment
     - dna genetics
     - physics formula
+    - scientist lab coat
+    - telescope observatory
+    - renewable energy research
+    - robot arm technology
+    - brain neuroscience
+    - climate research data
   medical:             # 의료
     - doctor stethoscope
     - hospital ward
@@ -230,6 +398,12 @@ categories:
     - vaccine injection
     - surgery operation
     - nurse patient care
+    - health checkup machine
+    - dentist clinic
+    - pharmacy medicine shelf
+    - emergency ambulance
+    - physical therapy rehab
+    - blood test lab
   environment:         # 환경
     - solar energy panel
     - wind turbine
@@ -237,6 +411,12 @@ categories:
     - plastic pollution ocean
     - climate change
     - tree planting
+    - forest conservation
+    - eco friendly bag
+    - air pollution city
+    - electric vehicle green
+    - water conservation
+    - sustainable farming
   city-life:           # 도시
     - city skyline night
     - subway station
@@ -244,6 +424,12 @@ categories:
     - traffic jam
     - skyscraper building
     - urban street
+    - apartment complex city
+    - night street neon
+    - city park people
+    - bus stop city
+    - construction site crane
+    - rooftop city view
   countryside:         # 시골/농촌
     - rice field
     - farm barn
@@ -251,6 +437,12 @@ categories:
     - tractor farming
     - vegetable garden
     - autumn harvest
+    - greenhouse farm
+    - farmer working field
+    - country road tree
+    - livestock cattle
+    - orchard fruit tree
+    - traditional village house
   senior:              # 시니어/노인
     - elderly couple
     - senior citizen smiling
@@ -258,6 +450,12 @@ categories:
     - grandmother portrait
     - senior health care
     - nursing home
+    - elderly walking park
+    - senior exercise group
+    - grandfather portrait
+    - elderly hands
+    - senior using smartphone
+    - family visiting elderly
   job-career:          # 취업/커리어
     - job interview
     - resume cv document
@@ -265,6 +463,12 @@ categories:
     - handshake hiring
     - graduation ceremony
     - business networking
+    - office worker portrait
+    - job fair booth
+    - online interview laptop
+    - training workshop
+    - certificate award
+    - career planning notebook
   law-justice:         # 법/정의
     - courtroom
     - judge gavel
@@ -272,6 +476,12 @@ categories:
     - justice scale
     - legal contract signing
     - police officer
+    - law books library
+    - handcuffs crime
+    - prison jail bars
+    - signing legal document
+    - court building exterior
+    - security guard cctv
   love-couple:         # 연애/사랑
     - romantic couple
     - holding hands
@@ -279,6 +489,12 @@ categories:
     - valentine heart
     - marriage proposal
     - couple hug
+    - couple walking street
+    - couple travel together
+    - gift flowers romantic
+    - couple cafe talking
+    - sunset couple silhouette
+    - wedding proposal ring
   youth:               # 청년
     - generation z
     - young professionals team
@@ -286,3 +502,9 @@ categories:
     - young entrepreneur
     - graduation young people
     - youth culture street
+    - college students campus
+    - young couple apartment
+    - youth part time job
+    - young people smartphone
+    - job seeker young
+    - youth sports club
