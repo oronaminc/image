@@ -90,7 +90,7 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 |------|------------|
 | 정치 | `government policy`, `election voting`, `parliament congress` |
 | 연예 | `concert stage`, `microphone singer`, `awards show` |
-| 지원금 | `welfare benefit`, `financial help hand`, `government grant document` |
+| 지원금 | `money hand giving`, `cash envelope`, `government document form` |
 | 돈 | `dollar bills`, `saving money jar`, `atm machine` |
 | 경제 | `stock trading chart`, `global economy`, `inflation price rising` |
 | 일상 | `morning routine`, `city commute`, `cleaning house` |
@@ -99,6 +99,15 @@ python -m imagecollector search "Lee Jae-myung" --source wikimedia --category ko
 
 이미 **37개 카테고리로 7천 8백여 장**을 모아 두었으니(정확한 수치는 `stats`), 위 키워드로
 `search` 하면 대개 **네트워크 없이 즉시** 라이브러리에서 결과가 나옵니다.
+
+> ⚠️ **영어 직역 키워드를 직접 만들지 마세요.** 스톡 사이트는 정책·제도 같은 추상
+> 개념을 색인하지 않습니다. `welfare benefit` 으로 치면 **동물 복지(animal welfare)**
+> 사진이 나옵니다. 한국어 낱말은 아래 `fetch` 에 그대로 넘기면 도구가 알아서
+> 시각적인 영어 검색어로 바꿔 줍니다.
+>
+> ```bash
+> python -m imagecollector fetch "지원금" --json   # 한국어 낱말 그대로
+> ```
 
 ---
 
